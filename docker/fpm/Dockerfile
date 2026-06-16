@@ -7,6 +7,9 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install iconv mbstring pdo_mysql zip
 
 
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
 USER 1000:1000
 EXPOSE 9000
 
