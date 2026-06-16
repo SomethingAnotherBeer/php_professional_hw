@@ -1,0 +1,33 @@
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: nginx
+    container_name: "nginx_container"
+    volumes:
+      - ./app:/var/www/app
+
+    ports:
+      - '80:80'
+    depends_on:
+      - app
+    networks:
+      - application_network
+    
+  app:
+    build:
+      context: ./fpm
+      dockerfile: Dockerfile
+    image: app
+    container_name: "app_container"
+    volumes:
+      - ./app:/var/www/app
+    ports:
+      - "9000:9000"
+    networks:
+      - application_network
+
+networks:
+  application_network:
+    driver: bridge
