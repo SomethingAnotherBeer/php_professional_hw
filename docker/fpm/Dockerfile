@@ -14,5 +14,3 @@ USER 1000:1000
 EXPOSE 9000
 
 WORKDIR /var/www/app
-
-#CMD ['php-fpm']
