@@ -25,6 +25,10 @@ services:
       - ./app:/var/www/app
     ports:
       - "9000:9000"
+    depends_on:
+      - redis
+      - mariadb
+      - memcached
     networks:
       - application_network
 
@@ -50,6 +54,13 @@ services:
     networks:
       - application_network
 
+  memcached:
+    image: memcached:1.6-alpine
+    container_name: memcached_container
+    expose:
+      - 11211
+    networks:
+      - application_network
 
 networks:
   application_network:
