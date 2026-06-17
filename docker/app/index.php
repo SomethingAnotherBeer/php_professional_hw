@@ -6,8 +6,7 @@ declare(strict_types=1);
 echo "current application <br/><br/>";
 
 function dbTest(PDO $connection) {
-    $stmt = $connection->prepare("INSERT INTO products (category_id, product_name) VALUES (:category_id, :product_name)");
-
+    
     $stmt = $connection->prepare("SELECT id, product_name FROM products");
     $stmt->execute();
 
