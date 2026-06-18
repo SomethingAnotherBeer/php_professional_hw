@@ -64,7 +64,7 @@ try {
     $redis = new Redis();
     $redis->connect($redis_env_vars['REDIS_HOST'], $redis_env_vars['REDIS_PORT']);
 
-    $connection = new PDO("mysql:host={$db_env_vars['DB_HOST']};dbname={$db_env_vars['DB_NAME']};charset=utf8", "{$db_env_vars['DB_USER']}", "{$db_env_vars['DB_PASSWORD']}");
+    $connection = new PDO("mysql:host={$db_env_vars['DB_HOST']};dbname={$db_env_vars['DB_NAME']};charset=utf8", $db_env_vars['DB_USER'], $db_env_vars['DB_PASSWORD']);
     $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     dbTest($connection);
