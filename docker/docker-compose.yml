@@ -1,0 +1,69 @@
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: nginx
+    container_name: "nginx_container"
+    volumes:
+      - ./app:/var/www/app
+
+    ports:
+      - '80:80'
+    depends_on:
+      - app
+    networks:
+      - application_network
+    
+  app:
+    build:
+      context: ./fpm
+      dockerfile: Dockerfile
+    image: app
+    container_name: "app_container"
+    volumes:
+      - ./app:/var/www/app
+    expose:
+      - "9000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - mariadb
+      - memcached
+    networks:
+      - application_network
+
+  redis:
+    image: redis:8-alpine
+    container_name: "redis_container"
+    expose:
+      - "6379"
+    networks:
+      - application_network
+
+  mariadb:
+    image: mariadb:lts
+    container_name: mariadb_container
+    expose:
+      - "3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+    volumes:
+      - ./db:/var/lib/mysql
+      - ./db_dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    networks:
+      - application_network
+
+  memcached:
+    image: memcached:1.6-alpine
+    container_name: memcached_container
+    expose:
+      - 11211
+    networks:
+      - application_network
+
+networks:
+  application_network:
+    driver: bridge
