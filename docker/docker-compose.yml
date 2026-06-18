@@ -23,8 +23,10 @@ services:
     container_name: "app_container"
     volumes:
       - ./app:/var/www/app
-    ports:
-      - "9000:9000"
+    expose:
+      - "9000"
+    env_file:
+      - .env
     depends_on:
       - redis
       - mariadb
@@ -46,8 +48,8 @@ services:
     expose:
       - "3306"
     environment:
-      MARIADB_ROOT_PASSWORD: 555
-      MARIADB_DATABASE: test_database
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
     volumes:
       - ./db:/var/lib/mysql
       - ./db_dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
