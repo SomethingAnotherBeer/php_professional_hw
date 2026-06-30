@@ -11,5 +11,7 @@
             "name": "Eugene Zarianski"
         }
     ],
-    "require": {}
+    "require": {
+        "somethinganotherbeer/methodborrow": "^1.0"
+    }
 }
