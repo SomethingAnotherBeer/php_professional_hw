@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once "vendor/autoload.php";
 
 echo "current application <br/><br/>";
 
@@ -69,6 +70,10 @@ try {
 
     dbTest($connection);
     redisTest($redis);
+
+    $app = App\Application::getInstance();
+
+    
 
 }
 catch(PDOException $e) {
