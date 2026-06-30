@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once "vendor/autoload.php";
+
 echo "current application <br/><br/>";
 
 function dbTest(PDO $connection) {
@@ -22,6 +24,7 @@ function redisTest(Redis $redis) {
     echo "Вывод из редиса<br/>";
     echo "По ключу test_key было получено значение " . $redis->get('test_key') . "<br/>";
 }
+
 
 function getEnvVars(array $expected_env_vars): array {
     $current_env_vars = [];
@@ -69,6 +72,9 @@ try {
 
     dbTest($connection);
     redisTest($redis);
+
+    $app = App\App::makeInstance();
+    $app->run();
 
 }
 catch(PDOException $e) {

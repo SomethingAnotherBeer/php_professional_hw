@@ -1,2 +1,3 @@
 /docker/db
 .env
+/docker/app/vendor

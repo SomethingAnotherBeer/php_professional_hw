@@ -1,0 +1,17 @@
+{
+    "name": "somethinganotherbeer/hw3",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Eugene Zarianski"
+        }
+    ],
+    "require": {
+        "somethinganotherbeer/methodborrow": "^1.0"
+    }
+}
