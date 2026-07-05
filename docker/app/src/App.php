@@ -9,9 +9,14 @@ use App\Controller\StringController;
 use App\Exception\Http\MethodNotAllowedException;
 use App\Exception\Http\RouteNotFoundException;
 use App\Exception\Service\MethodNotFoundException;
+use App\Interface\Exception\BadDataExceptionInterface;
+use App\Interface\Exception\NotAllowedExceptionInterface;
+use App\Interface\Exception\NotFoundExceptionInterface;
+use App\Interface\Exception\ServerExceptionInterface;
 use App\Interface\Service\IsFactoryInterface;
 use App\Service\StringService;
 use FastRoute;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -26,8 +31,8 @@ class App
 
     public function process()
     {
+        $request = Request::createFromGlobals();
         try {
-            $request = Request::createFromGlobals();
 
             $dispatcher = simpleDispatcher(function(FastRoute\RouteCollector $r) {
                     $r->addRoute('POST', '/', ['class' => HomeController::class, 'method' => 'execute', 'args' => [StringService::class]]);
@@ -94,7 +99,40 @@ class App
         }
 
     catch(\Exception $e) {
-        print_r($e->getMessage());
+        $response = null;
+        $content = null;
+        $content_type = $request->getContentTypeFormat();
+
+        if ("application/json" === $content_type) {
+            $response = new JsonResponse();
+            $content = json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+        }
+        else {
+            $response = new Response();
+            $content = $e->getMessage();
+        }
+        $response->setContent($content);
+    
+        $exception_code_list =
+        [
+            BadDataExceptionInterface::class => Response::HTTP_BAD_REQUEST,
+            NotFoundExceptionInterface::class => Response::HTTP_NOT_FOUND,
+            ServerExceptionInterface::class => Response::HTTP_INTERNAL_SERVER_ERROR,
+            NotAllowedExceptionInterface::class => Response::HTTP_METHOD_NOT_ALLOWED,
+        ];
+        
+        $current_code = 500;
+
+        foreach ($exception_code_list as $exception_interface => $code) {
+            if (is_subclass_of($e::class, $exception_interface)) {
+                $current_code = $code;
+            }
+        }
+
+        $response->setStatusCode($current_code);
+        $response->prepare($request);
+        $response->send();
+        
     }
 
     }
