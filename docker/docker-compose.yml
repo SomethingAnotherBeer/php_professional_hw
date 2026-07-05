@@ -54,7 +54,7 @@ services:
       MARIADB_DATABASE: ${DB_NAME}
     volumes:
       - ./db:/var/lib/mysql
- #     - ./db_dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+      - ./db_dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
     networks:
       - application_network
 
