@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace App\Exception\Http;
 
-class MethodNotAllowedException extends \Exception
+use App\Interface\Exception\NotAllowedExceptionInterface;
+
+class MethodNotAllowedException extends \Exception implements NotAllowedExceptionInterface
 {
 
 }

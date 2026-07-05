@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace App\Exception\Service;
 
-class IncorrectClosedBracketException extends \Exception
+use App\Interface\Exception\BadDataExceptionInterface;
+
+class IncorrectClosedBracketException extends \Exception implements BadDataExceptionInterface
 {
     
 }

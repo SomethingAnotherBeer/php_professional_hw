@@ -6,6 +6,11 @@
             "App\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Test\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Eugene Zarianski"

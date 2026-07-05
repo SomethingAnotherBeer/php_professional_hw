@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace App\Exception\Service;
 
-class StringIsEmptyException extends \Exception
+use App\Interface\Exception\BadDataExceptionInterface;
+
+class StringIsEmptyException extends \Exception implements BadDataExceptionInterface
 {
     
 }

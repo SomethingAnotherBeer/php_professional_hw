@@ -56,7 +56,8 @@ class StringService implements IsFactoryInterface
         $errors = [];
         for ($i = 0; $i < count($bracket_open_list); $i++) {
             if (!array_key_exists($i, $bracket_close_list) || $bracket_close_list[$i] < $bracket_open_list[$i]) {
-                $errors[] = "Не найдено закрывающей скобки для открывающей на позиции {$bracket_open_list[$i]}";
+                $position = $bracket_open_list[$i] + 1;
+                $errors[] = "Не найдено закрывающей скобки для открывающей на позиции $position";
             }
         }
 
@@ -68,7 +69,8 @@ class StringService implements IsFactoryInterface
         $errors = [];
         for ($i = 0; $i < count($bracket_close_list); $i++) {
             if (!array_key_exists($i, $bracket_open_list) || $bracket_close_list[$i] < $bracket_open_list[$i]) {
-                $errors[] = "Не найдено открывающей скобки для закрывающей на позиции {$bracket_close_list[$i]}";
+                $position = $bracket_close_list[$i] + 1;
+                $errors[] = "Не найдено открывающей скобки для закрывающей на позиции $position";
             }
         }
 

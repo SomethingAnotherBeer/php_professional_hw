@@ -16,7 +16,7 @@ class ApiHomeController extends Controller
 
     public function execute(StringService $stringService): JsonResponse
     {
-        $request_data = json_decode($this->request->getContent(), true);
+        $request_data = ("" !== $this->request->getContent()) ? json_decode($this->request->getContent(), true) : [];
         if (!array_key_exists('string', $request_data)) {
             throw new RequestStringNotFoundException("Строка не найдена в теле запроса");
         }

@@ -96,13 +96,15 @@ class App
         }
 
     catch(\Exception $e) {
+
         $response = null;
         $content = null;
         $content_type = $request->getContentTypeFormat();
 
-        if ("application/json" === $content_type) {
+        if ("json" === $content_type) {
             $response = new JsonResponse();
             $content = json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+            
         }
         else {
             $response = new Response();
@@ -123,6 +125,7 @@ class App
         foreach ($exception_code_list as $exception_interface => $code) {
             if (is_subclass_of($e::class, $exception_interface)) {
                 $current_code = $code;
+                break;
             }
         }
 
@@ -131,6 +134,7 @@ class App
         $response->send();
         
     }
+    
 
     }
 

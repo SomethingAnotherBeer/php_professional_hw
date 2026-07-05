@@ -18,10 +18,10 @@ class HomeController extends Controller
     {
         $request_string = $this->request->request->get('string');
         if (null === $request_string) {
-            throw new RequestStringNotFoundException("Строка не указана в теле запроса");
+            throw new RequestStringNotFoundException("Строка не найдена в теле запроса");
         }
         $response = $stringService->execute($request_string);
-        return new Response($request_string, 201);
+        return new Response($response, 201);
     }
 
 }
