@@ -56,7 +56,6 @@ class App
                     
                     break;
                 case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
-                    $allowedMethods = $routeInfo[1];
                     throw new MethodNotAllowedException("Метод $http_method не является приемлемым для данного ресурса");
                     break;
                 case FastRoute\Dispatcher::FOUND:
@@ -91,8 +90,6 @@ class App
                         }
                         
                     }
-
-                   
             break;
         }
 
@@ -120,7 +117,7 @@ class App
             ServerExceptionInterface::class => Response::HTTP_INTERNAL_SERVER_ERROR,
             NotAllowedExceptionInterface::class => Response::HTTP_METHOD_NOT_ALLOWED,
         ];
-        
+
         $current_code = 500;
 
         foreach ($exception_code_list as $exception_interface => $code) {
