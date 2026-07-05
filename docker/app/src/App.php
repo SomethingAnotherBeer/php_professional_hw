@@ -19,6 +19,8 @@ use FastRoute;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 
 use function FastRoute\simpleDispatcher;
 
@@ -32,6 +34,10 @@ class App
     public function process()
     {
         $request = Request::createFromGlobals();
+        $storage = new NativeSessionStorage();
+        $session = new Session($storage);
+        $request->setSession($session);
+
         try {
 
             $dispatcher = simpleDispatcher(function(FastRoute\RouteCollector $r) {
