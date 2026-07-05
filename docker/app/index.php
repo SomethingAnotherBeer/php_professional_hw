@@ -1,4 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once "vendor/autoload.php";
 
-echo "Hello from "  . $_SERVER['SERVER_NAME'] . "<br/>";
+$app = App\App::makeInstance();
+$app->process();

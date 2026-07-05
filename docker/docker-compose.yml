@@ -38,6 +38,9 @@ services:
     container_name: "redis"
     expose:
       - "6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     networks:
       - application_network
 

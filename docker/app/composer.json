@@ -3,7 +3,7 @@
     "type": "project",
     "autoload": {
         "psr-4": {
-            "Somethinganotherbeer\\Hw4\\": "src/"
+            "App\\": "src/"
         }
     },
     "authors": [
@@ -11,5 +11,8 @@
             "name": "Eugene Zarianski"
         }
     ],
-    "require": {}
+    "require": {
+        "symfony/http-foundation": "^8.1",
+        "nikic/fast-route": "^1.3"
+    }
 }
