@@ -15,7 +15,7 @@ class ApiHomeControllerTest extends TestCase
     {
         $this->httpClient = new Client(
             [
-                'base_uri' => 'http://nginx',
+                'base_uri' => 'http://nginx_main',
                 'http_errors' => false,
             ]);
 
