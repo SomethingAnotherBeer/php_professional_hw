@@ -11,7 +11,6 @@ RUN apt-get update && apt-get install -y \
     && pecl install redis \
     && docker-php-ext-enable redis 
 
-COPY ./php.ini /usr/local/etc/php/conf.d/php-custom.ini
 
 USER 1000:1000
 EXPOSE 9000
