@@ -133,9 +133,9 @@ class ApiHomeControllerTest extends TestCase
 
         $response = $this->httpClient->request('POST', $uri, ['json' => $request_body, 'headers' => $headers]);
         $data = json_decode($response->getBody()->getContents(), true);
-
+        
         $this->assertEquals(400, $response->getStatusCode());
-        $this->assertEquals("Не найдено закрывающей скобки для открывающей на позиции 2", $data['error']);
+        $this->assertEquals("Не найдено закрывающей скобки для открывающей на позиции 2\nНе найдено открывающей скобки для закрывающей на позиции 1", $data['error']);
     }
 
 }

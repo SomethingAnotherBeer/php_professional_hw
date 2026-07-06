@@ -35,15 +35,19 @@ class StringService implements IsFactoryInterface
 
         $for_open_errors = $this->checkForOpen($bracket_open_list, $bracket_close_list);
         $for_close_errors = $this->checkForClosed($bracket_open_list, $bracket_close_list);
+        $all_errors = [];
 
         if (count($for_open_errors) > 0) {
-            $for_open_errors_str = implode("\n", $for_open_errors);
-            throw new IncorrectClosedBracketException($for_open_errors_str);
+            $all_errors = array_merge($all_errors, $for_open_errors);
         }
 
         if (count($for_close_errors) > 0) {
-            $for_close_errors_str = implode("\n", $for_close_errors);
-            throw new IncorrectOpenBracketException($for_close_errors_str);
+            $all_errors = array_merge($all_errors, $for_close_errors);
+        }
+
+        if (count($all_errors) > 0) {
+            $all_errors_str = implode("\n", $all_errors);
+            throw new IncorrectBracketsException($all_errors_str);
         }
 
         return "Строка корректна";

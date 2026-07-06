@@ -136,7 +136,7 @@ class WebHomeControllerTest extends TestCase
         $data = $response->getBody()->getContents();
 
         $this->assertEquals(400, $response->getStatusCode());
-        $this->assertEquals("Не найдено закрывающей скобки для открывающей на позиции 2", $data);
+        $this->assertEquals("Не найдено закрывающей скобки для открывающей на позиции 2\nНе найдено открывающей скобки для закрывающей на позиции 1", $data);
     }
 
 
