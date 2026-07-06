@@ -4,5 +4,6 @@ namespace App\Exception\Service;
 
 class IncorrectEmailException extends EmailValidationException
 {
-
+    protected int $http_code = 400;
+    
 }

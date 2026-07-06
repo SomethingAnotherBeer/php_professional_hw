@@ -10,9 +10,16 @@ class MailCheckerService
     private array $cached_domain_list = [];
     private array $validation_errors = [];
 
+    private MailCheckerErrorStorage $mailCheckerErrorStorage;
+
     public static function makeInstance(): MailCheckerService
     {
-        return new MailCheckerService();
+        return new MailCheckerService(new MailCheckerErrorStorage());
+    }
+
+    public function __construct(MailCheckerErrorStorage $mailCheckerErrorStorage)
+    {
+        $this->mailCheckerErrorStorage = $mailCheckerErrorStorage;
     }
 
     public function validateEmailList(array $email_list, string $write_in_cache_mode = '', bool $use_cache = false)
@@ -28,7 +35,6 @@ class MailCheckerService
             }
         }
 
-        $undefined_mx_host_list = [];
         $verified_mx_domain_list = [];
 
         foreach ($domain_list as $domain) {
@@ -38,18 +44,13 @@ class MailCheckerService
             else {
                 $current_mx_record = dns_get_record($domain, DNS_MX);
                 if (count($current_mx_record) === 0) {
-                    $undefined_mx_host_list[] = $domain;
+                    $this->getErrorStorage()->pushUndefinedMXDomainInList($domain);
                 }
                 else {
                     $verified_mx_domain_list[] = $domain;
                 }
 
             }    
-        }
-
-        if (count($undefined_mx_host_list) > 0) {
-            $undefined_mx_host_list_str = implode("|", $undefined_mx_host_list);
-            throw new UndefinedMXRecordException("Следующие домены не имеют MX записи: $undefined_mx_host_list_str");
         }
 
         if ($write_in_cache_mode !== '') {
@@ -76,19 +77,33 @@ class MailCheckerService
         return $this;
     }
 
+    public function getErrorStorage(): MailCheckerErrorStorage
+    {
+        return $this->mailCheckerErrorStorage;
+    }
+
+    public function getErrors(): array
+    {
+        return $this->getErrorStorage()->getAllFormattedErrorList();
+    }
+
+    public function getEmailErrors(): array
+    {
+        return $this->getErrorStorage()->getFormattedInvalidEmailErrorList();
+    }
+
+    public function getDomainErrors(): array
+    {
+        return $this->getErrorStorage()->getFormattedUndefinedMXDomainErrorList();
+    }
+
     private function checkMailListIsValid(array $email_list): void
     {
-        $invalide_email_list = [];
 
         foreach ($email_list as $email) {
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $invalide_email_list[] = $email;
+                $this->getErrorStorage()->pushInvalidEmailInList($email);
             }
-        }
-
-        if (count($invalide_email_list) > 0) {
-            $invalide_email_list_str = implode(" | ", $invalide_email_list);
-            throw new IncorrectEmailException("Следующие email адреса имеют некорректный формат: $invalide_email_list_str");
         }
     }
 

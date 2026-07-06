@@ -5,6 +5,9 @@ namespace App;
 use App\Exception\Request\RequestBodyRequiredKeyNotSpecifiedException;
 use App\Exception\Request\RequestValueHasIncorrectTypeException;
 use App\Exception\Request\RequestValueIsEmptyException;
+use App\Exception\Service\EmailValidationException;
+use App\Exception\Service\IncorrectEmailException;
+use App\Exception\Service\UndefinedMXRecordException;
 use App\Service\MailCheckerService;
 
 class App
@@ -49,13 +52,32 @@ class App
 
                 $mailChecker = MailCheckerService::makeInstance();
                 $mailChecker->validateEmailList($request_body['email_list'], 'a', false);
+                
+                $email_errors = $mailChecker->getEmailErrors();
+                if (count($email_errors) > 0) {
+                    $email_errors_str = implode("\n", $email_errors);
+                    throw new IncorrectEmailException($email_errors_str);
+                }
 
-                print_r($mailChecker->getCache());
-               
+                $domain_errors = $mailChecker->getDomainErrors();
+                if (count($domain_errors) > 0) {
+                    $domain_errors_str = implode("\n", $domain_errors);
+                    throw new UndefinedMXRecordException($domain_errors_str);
+                }
+
+                echo "Все email валидны";
+                
+
             }
         }
-        catch(\Exception $e) {
+        catch (EmailValidationException $e) {
+            http_response_code($e->getHttpCode());
+            echo $e->getMessage();
 
+        }
+        catch(\Exception $e) {
+            http_response_code(500);
+            echo $e->getMessage();
         }
 
     }

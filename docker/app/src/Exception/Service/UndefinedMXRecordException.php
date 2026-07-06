@@ -4,5 +4,5 @@ namespace App\Exception\Service;
 
 class UndefinedMXRecordException extends EmailValidationException
 {
-
+    protected int $http_code = 422;
 }
