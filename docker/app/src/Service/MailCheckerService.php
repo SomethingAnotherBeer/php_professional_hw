@@ -2,13 +2,10 @@
 declare(strict_types=1);
 namespace App\Service;
 
-use App\Exception\Service\IncorrectEmailException;
-use App\Exception\Service\UndefinedMXRecordException;
 
 class MailCheckerService
 {
     private array $cached_domain_list = [];
-    private array $validation_errors = [];
 
     private MailCheckerErrorStorage $mailCheckerErrorStorage;
 
