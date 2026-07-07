@@ -23,7 +23,7 @@ class ApiHomeController extends Controller
 
         $string = $request_data['string'];
         $response = $stringService->execute($string);
-        return new JsonResponse(['response' => $response], 201)->setEncodingOptions(JSON_UNESCAPED_UNICODE);
+        return new JsonResponse(['response' => $response], 200)->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
 }

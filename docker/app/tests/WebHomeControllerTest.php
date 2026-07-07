@@ -37,7 +37,7 @@ class WebHomeControllerTest extends TestCase
         $response = $this->httpClient->request('POST', $uri, ['form_params' => $request_body, 'headers' => $headers]);
         $data = $response->getBody()->getContents();
         
-        $this->assertEquals(201, $response->getStatusCode());
+        $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals("Строка корректна", $data);
 
     }

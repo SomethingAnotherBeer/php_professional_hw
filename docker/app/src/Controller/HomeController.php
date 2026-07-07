@@ -21,7 +21,7 @@ class HomeController extends Controller
             throw new RequestStringNotFoundException("Строка не найдена в теле запроса");
         }
         $response = $stringService->execute($request_string);
-        return new Response($response, 201);
+        return new Response($response, 200);
     }
 
 }

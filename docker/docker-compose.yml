@@ -22,7 +22,7 @@ services:
     image: nginx/hw4
     container_name: "nginx1"
     volumes:
-      - ./nginx_confs/nginx1.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx_confs/nginx.conf:/etc/nginx/conf.d/default.conf
       - ./app:/var/www/app
   
     depends_on:
@@ -38,7 +38,7 @@ services:
     image: nginx/hw4
     container_name: "nginx2"
     volumes:
-      - ./nginx_confs/nginx2.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx_confs/nginx.conf:/etc/nginx/conf.d/default.conf
       - ./app:/var/www/app
    
     depends_on:
