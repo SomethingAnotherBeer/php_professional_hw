@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace App\Exception\Request;
 
-class RequestValueHasIncorrectTypeException extends \Exception
+use App\Exception\Service\EmailValidationException;
+
+class RequestValueHasIncorrectTypeException extends EmailValidationException
 {
     
 }

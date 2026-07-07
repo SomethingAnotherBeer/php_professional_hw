@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace App\Exception\Request;
 
-class RequestValueIsEmptyException extends \Exception
+use App\Exception\Service\EmailValidationException;
+
+class RequestValueIsEmptyException extends EmailValidationException
 {
     
 }

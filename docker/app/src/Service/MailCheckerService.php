@@ -8,18 +8,20 @@ class MailCheckerService
     private array $cached_domain_list = [];
 
     private MailCheckerErrorStorage $mailCheckerErrorStorage;
+    private MailCheckerCacheStorage $mailCheckerCacheStorage;
 
     public static function makeInstance(): MailCheckerService
     {
-        return new MailCheckerService(new MailCheckerErrorStorage());
+        return new MailCheckerService(new MailCheckerErrorStorage(), MailCheckerCacheStorage::makeInstance());
     }
 
-    public function __construct(MailCheckerErrorStorage $mailCheckerErrorStorage)
+    public function __construct(MailCheckerErrorStorage $mailCheckerErrorStorage, MailCheckerCacheStorage $mailCheckerCacheStorage)
     {
         $this->mailCheckerErrorStorage = $mailCheckerErrorStorage;
+        $this->mailCheckerCacheStorage = $mailCheckerCacheStorage;
     }
 
-    public function validateEmailList(array $email_list, string $write_in_cache_mode = '', bool $use_cache = false)
+    public function validateEmailList(array $email_list, bool $write_in_cache = true, bool $use_cache = false)
     {
         $this->checkMailListIsValid($email_list);
 
@@ -31,46 +33,42 @@ class MailCheckerService
                 $domain_list[] = $current_domain;
             }
         }
-
-        $verified_mx_domain_list = [];
+        
 
         foreach ($domain_list as $domain) {
-            if ($use_cache && in_array($domain, $this->cached_domain_list)) {
-                $verified_mx_domain_list[] = $domain;
+
+            $is_taken_from_cache = false;
+            $current_mx_record = [];
+
+            if ($use_cache && $this->mailCheckerCacheStorage->has($domain)) {
+                $is_taken_from_cache = true;
             }
             else {
                 $current_mx_record = dns_get_record($domain, DNS_MX);
-                if (count($current_mx_record) === 0) {
+               
+                if (!is_array($current_mx_record) || count($current_mx_record) === 0) {
                     $this->getErrorStorage()->pushUndefinedMXDomainInList($domain);
                 }
-                else {
-                    $verified_mx_domain_list[] = $domain;
-                }
-
-            }    
-        }
-
-        if ($write_in_cache_mode !== '') {
-            if ('a' === $write_in_cache_mode) {
-                $this->appendInCache($verified_mx_domain_list);
             }
-            else if ('w' === $write_in_cache_mode) {
-                $this->writeInCache($verified_mx_domain_list);
-            }
-        }
 
-        
+            if ($write_in_cache && !$is_taken_from_cache) {
+                $ttl = array_reduce($current_mx_record, fn(int $value, array $mx_domain) => $value+= array_key_exists('ttl', $mx_domain) ? (int)$mx_domain['ttl'] : 0, 0);
+                $ttl = ($ttl !== 0) ? (int)($ttl / count($current_mx_record)) : 1000;
+                $this->mailCheckerCacheStorage->add($domain, $ttl);
+            }
+               
+        }
 
     }
 
     public function getCache(): array
-    {
-        return $this->cached_domain_list;
+    {   
+        return $this->mailCheckerCacheStorage->getAll();
     }
 
     public function clearCache(): static
     {
-        $this->cached_domain_list = [];
+        $this->mailCheckerCacheStorage->clearAll();
         return $this;
     }
 

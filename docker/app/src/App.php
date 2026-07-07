@@ -50,8 +50,9 @@ class App
                     }
                 }
 
+
                 $mailChecker = MailCheckerService::makeInstance();
-                $mailChecker->validateEmailList($request_body['email_list'], 'a', false);
+                $mailChecker->validateEmailList($request_body['email_list'], true, true);
                 
                 $email_errors = $mailChecker->getEmailErrors();
                 if (count($email_errors) > 0) {
@@ -65,8 +66,9 @@ class App
                     throw new UndefinedMXRecordException($domain_errors_str);
                 }
 
-                echo "Все email валидны";
-                
+                echo "Все email валидны\n";
+               
+                print_r($mailChecker->getCache());
 
             }
         }
