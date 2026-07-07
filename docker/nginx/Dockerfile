@@ -1,6 +1,6 @@
 FROM nginx:stable-alpine
 
-COPY ./local.conf /etc/nginx/conf.d/default.conf
+
 
 EXPOSE 80
 

@@ -1,27 +1,16 @@
-DROP TABLE IF EXISTS products;
-DROP TABLE IF EXISTS categories;
+SET NAMES 'utf8mb4';
 
-CREATE TABLE categories (
+DROP TABLE if EXISTS users;
+
+CREATE TABLE users (
     id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    category_name VARCHAR(255) UNIQUE NOT NULL
+    user_name VARCHAR(255) NOT NULL,
+    user_login VARCHAR(255) UNIQUE NOT NULL,
+    user_password VARCHAR(255) NOT NULL
+
 );
 
-CREATE TABLE products (
-    id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    category_id INT(11) NOT NULL,
-    product_name VARCHAR(255) NOT NULL,
-    FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE CASCADE
-);
-
-INSERT INTO categories (id, category_name) VALUES
-    (1, 'category name 1'),
-    (2, 'category name 2');
-
-INSERT INTO products (id, category_id, product_name) VALUES 
-    (1, 1, 'product name 1'),
-    (2, 1, 'product name 2'),
-    (3, 2, 'product name 3'),
-    (4, 2, 'product name 4');
-
-
-SET FOREIGN_KEY_CHECKS = 1;
+INSERT INTO users (id, user_name, user_login, user_password) VALUES 
+    (1, 'Осаму Дазай', 'dazai', '$2y$10$AnVtDCjjUZirAQ1Nfuf6MerMG/PqqgS7HocjqjSA1kWxzp1Zvnrqi'),
+    (2, 'Ранпо Эдогава', 'ranpo', '$2y$10$GluwCOYoiNcDevRH.jHjGee7jvT01QW924r5zJtH9CVCaq1VCzPK2'),
+    (3, 'Акико Йосано', 'yosana', '$2y$10$ndrf2pIDJFw7VInhsSd25.HwnkcbxwWaDHplrEkxRMxwSSGAPnfRG');

@@ -7,13 +7,10 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zlib1g-dev \
     libssl-dev \
-    libmemcached-dev \
     && docker-php-ext-install iconv mbstring pdo_mysql zip \
     && pecl install redis \
-    && pecl install memcached \
-    && docker-php-ext-enable redis memcached 
+    && docker-php-ext-enable redis 
 
-COPY ./php.ini /usr/local/etc/php/conf.d/php-custom.ini
 
 USER 1000:1000
 EXPOSE 9000
