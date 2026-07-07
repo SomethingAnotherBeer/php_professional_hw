@@ -1,0 +1,45 @@
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: nginx
+    container_name: "nginx"
+    volumes:
+      - ./app:/var/www/app
+
+    ports:
+      - '80:80'
+    depends_on:
+      - app
+    networks:
+      - application_network
+    
+  app:
+    build:
+      context: ./fpm
+      dockerfile: Dockerfile
+    image: app
+    container_name: "app"
+    volumes:
+      - ./app:/var/www/app
+    expose:
+      - "9000"
+    env_file:
+      - .env
+    depends_on:
+      - memcached
+    networks:
+      - application_network
+
+  memcached:
+    image: memcached:1.6-alpine
+    container_name: memcached
+    expose:
+      - 11211
+    networks:
+      - application_network
+
+networks:
+  application_network:
+    driver: bridge
