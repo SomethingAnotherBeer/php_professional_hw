@@ -66,8 +66,9 @@ class App
                     throw new UndefinedMXRecordException($domain_errors_str);
                 }
 
-                echo "Все email валидны\n";
+                echo "Все email валидны\n\n";
                
+                echo "Текущий кэш: ";
                 print_r($mailChecker->getCache());
 
             }
