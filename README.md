@@ -65,5 +65,5 @@ erDiagram
     movie_session ||--|{ tickets: один_ко_многим
     customer || .. o{ tickets: один_ко_многим
     place || -- |{ tickets: один_ко_многим
-    users || .. o{ customer: один_ко_многим
+    users || .. ||{ customer: один_к_одному
 ```
