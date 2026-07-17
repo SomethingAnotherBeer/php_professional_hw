@@ -87,6 +87,8 @@ INSERT INTO halls(hall_id, hall_name) VALUES
 (2, 'Средний зал'),
 (3, 'Маленький зал');
 
+CREATE INDEX idx_movie_session_start_end ON movie_sessions(date_of_start, date_of_end);
+
 INSERT INTO hall_rows (hall_row_id, hall_id, hall_row_number)
 SELECT
 i, 1, i
