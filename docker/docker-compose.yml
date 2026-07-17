@@ -16,6 +16,5 @@ services:
       retries: 5
       start_period: 60s
     volumes:
-      - db_hw7/var/lib/postgresql/data:rw
-volumes:
-  - db_hw7: ./db
+      - ./db:/var/lib/postgresql/data:rw
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
