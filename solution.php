@@ -40,60 +40,6 @@ function getListNode(array $args): ListNode {
 
 
 function mergeTwoList(ListNode $listOne, ListNode $listTwo): ListNode {
-    $head = new ListNode();
-    $currentListNode = $head;
-    $current_val = 0;
-    $val_list = [];
-    $is_next = true;
-
-
-    while ($is_next) {
-        $list_one_val = (null !== $listOne) ? $listOne->val : null;
-        $list_two_val = (null !== $listTwo) ? $listTwo->val : null;
-
-        if (null === $list_one_val && null === $list_two_val) {
-            $is_next = false;
-            break;
-        }
-
-        if (null !== $list_one_val && null !== $list_two_val) {
-            if ($list_one_val <= $list_two_val ) {
-                $current_val = $list_one_val;
-                $listOne = $listOne->next;
-            }
-
-            else if ($list_one_val >= $list_two_val) {
-                $current_val = $list_two_val;
-                $listTwo = $listTwo->next;
-            }
-        }
-
-        else if (null !== $list_one_val) {
-            $current_val = $list_one_val;
-            $listOne = $listOne->next;
-        }
-        else if (null !== $list_two_val) {
-            $current_val = $list_two_val;
-            $listTwo = $listTwo->next;
-        }
-
-        $val_list[] = $current_val;
-
-    }
-
-    for ($i = 0; $i < count($val_list); $i++) {
-        $currentListNode->val = $val_list[$i];
-
-        $currentListNode->next = array_key_exists($i + 1, $val_list) ? new ListNode() : null;
-        $currentListNode = $currentListNode->next;
-    }
-
-
-    return $head;
-}
-
-
-function mergeTwoListOne(ListNode $listOne, ListNode $listTwo): ListNode {
     
     $list_one_len = 0;
     $list_two_len = 0;
@@ -260,6 +206,6 @@ $listNodeOne = getListNode($list_node_one_args);
 $listNodeTwo = getListNode($list_node_two_args);
 
 
-$result = mergeTwoListOne($listNodeOne, $listNodeTwo);
+$result = mergeTwoList($listNodeOne, $listNodeTwo);
 
 print_r($result);
