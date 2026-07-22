@@ -198,8 +198,8 @@ function mergeLinked(ListNode $listLeft, ListNode $listRight) {
 
 
 
-$list_node_one_args = [1,2,3, 10, 11];
-$list_node_two_args = [4,5,6, 3, 9, 6];
+$list_node_one_args = [1,2,3,6,10,11];
+$list_node_two_args = [4,5,6,7,9,21,25,27];
 
 
 $listNodeOne = getListNode($list_node_one_args);
