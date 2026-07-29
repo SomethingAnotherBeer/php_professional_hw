@@ -11,7 +11,6 @@ erDiagram
     halls {
         int hall_id
         string hall_name
-        string DCI
     }
     rows {
         int row_id
