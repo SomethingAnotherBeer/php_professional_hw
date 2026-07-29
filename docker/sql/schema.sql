@@ -121,10 +121,15 @@ SELECT
 3, i
 FROM generate_series(1, 6) AS i;
 
+
+
+
+
+
 WITH first_hall_rows AS (
-    SELECT hall_row_id, i AS place_number FROM
+    SELECT hall_row_id, ROW_NUMBER() OVER(ORDER BY hall_row_id) AS place_number FROM
     hall_rows
-    CROSS JOIN generate_series(1, 24) AS i 
+    CROSS JOIN generate_series(1, 24)
     WHERE hall_id = 1
 )
 INSERT INTO places(hall_row_id, place_number)
@@ -134,9 +139,9 @@ FROM first_hall_rows;
 
 
 WITH second_hall_rows AS (
-    SELECT hall_row_id, i AS place_number FROM
+    SELECT hall_row_id, ROW_NUMBER() OVER(ORDER BY hall_row_id) AS place_number FROM
     hall_rows
-    CROSS JOIN generate_series(1, 12) AS i 
+    CROSS JOIN generate_series(1, 12)
     WHERE hall_id = 2
 )
 INSERT INTO places(hall_row_id, place_number)
@@ -145,9 +150,9 @@ second_hall_rows.hall_row_id, second_hall_rows.place_number
 FROM second_hall_rows;
 
 WITH third_hall_rows AS (
-    SELECT hall_row_id, i AS place_number FROM
+    SELECT hall_row_id, ROW_NUMBER() OVER(ORDER BY hall_row_id) AS place_number FROM
     hall_rows
-    CROSS JOIN generate_series(1, 6) AS i 
+    CROSS JOIN generate_series(1, 6)
     WHERE hall_id = 3
 )
 INSERT INTO places(hall_row_id, place_number)
