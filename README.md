@@ -6,24 +6,24 @@ For otus php professional course homeworks
 ```mermaid
 erDiagram
     
-    hall ||--|{ row: один_ко_многим
-    row || --|{ place: один_ко_многим
-    hall {
+    halls ||--|{ rows: "Зал, в котором содержатся ряды"
+    rows || --|{ places: "Место, содержащаяся в ряду"
+    halls {
         int hall_id
         string hall_name
         string DCI
     }
-    row {
+    rows {
         int row_id
         int hall_id
         tinyint row_number
     }
-    place {
+    places {
         int place_id
         int row_id
         tinyint place_number
     }
-    movie{
+    movies{
         int movie_id
         string movie_name
         date premiere_date
@@ -31,7 +31,7 @@ erDiagram
         string age_rating
         text movie_description    
     }
-    movie_session{
+    movie_sessions{
         int movie_session_id
         int movie_id
         int hall_id
@@ -39,21 +39,28 @@ erDiagram
         datetime date_of_end
         decimal ticket_price
     }
-    movie ||-- |{ movie_session: один_ко_многим
-    hall || -- |{ movie_session: один_ко_многим
-    customer{
+    tickets{
+        int ticket_id
+        int movie_session_id
+        int place_id
+        decimal ticket_price
+    }
+    booked_tickets{
+        int booked_ticket_id
+        int ticket_id
+        int customer_id
+    }
+
+    movies ||-- |{ movie_sessions: "Фильм, показываемый во время киносеанса"
+    halls || -- |{ movie_sessions: "Кинозал, в котором показывается фильм"
+
+    customers{
         int customer_id
         int user_id
         string customer_email
         string customer_phone
     }
-    tickets{
-        int ticket_id
-        int movie_session_id
-        int place_id
-        int customer_id
-        bool is_booked
-    }
+
     users {
         int user_id
         string user_name
@@ -62,8 +69,9 @@ erDiagram
         string user_password
         string user_role
     }
-    movie_session ||--|{ tickets: один_ко_многим
-    customer || .. o{ tickets: один_ко_многим
-    place || -- |{ tickets: один_ко_многим
-    users || .. o| customer: один_к_одному
+    movie_sessions ||--|{tickets: "билет на киносеанс"
+    places ||--o{tickets: "Место в зале, за которым закреплен билет"
+    tickets ||..||booked_tickets: "Билеты, которые являются купленными"
+    customers}o..o{booked_tickets: "Покупка клиентом билета"
+    users || .. o| customers: "Пользователь, который является покупателем билетов"
 ```
