@@ -104,52 +104,69 @@ INSERT INTO halls(hall_id, hall_name) VALUES
 SELECT setval('halls_hall_id_seq', (SELECT MAX(halls.hall_id) FROM halls));
 
 
-INSERT INTO hall_rows (hall_row_id, hall_id, hall_row_number)
+
+INSERT INTO hall_rows(hall_id, hall_row_number)
 SELECT
-i, 1, i
+1, i
 FROM generate_series(1, 24) AS i;
 
-
-INSERT INTO hall_rows(hall_row_id, hall_id, hall_row_number)
+INSERT INTO hall_rows(hall_id, hall_row_number)
 SELECT
-i + 24, 2, i
+2, i
 FROM generate_series(1, 12) AS i;
 
-INSERT INTO hall_rows(hall_row_id, hall_id, hall_row_number)
+
+INSERT INTO hall_rows(hall_id, hall_row_number)
 SELECT
-i + 36, 3, i
+3, i
 FROM generate_series(1, 6) AS i;
 
-SELECT setval('hall_rows_hall_row_id_seq', (SELECT MAX(hall_rows.hall_row_id) FROM hall_rows));
-
-INSERT INTO places (place_id, hall_row_id, place_number)
+WITH first_hall_rows AS (
+    SELECT hall_row_id, i AS place_number FROM
+    hall_rows
+    CROSS JOIN generate_series(1, 24) AS i 
+    WHERE hall_id = 1
+)
+INSERT INTO places(hall_row_id, place_number)
 SELECT
-i, i, i
-FROM generate_series(1, 24) AS i;
+first_hall_rows.hall_row_id, first_hall_rows.place_number
+FROM first_hall_rows;
 
-INSERT INTO places (place_id, hall_row_id, place_number)
+
+WITH second_hall_rows AS (
+    SELECT hall_row_id, i AS place_number FROM
+    hall_rows
+    CROSS JOIN generate_series(1, 12) AS i 
+    WHERE hall_id = 2
+)
+INSERT INTO places(hall_row_id, place_number)
 SELECT
-i + 24, i + 24, i
-FROM generate_series(1, 12) AS i;
+second_hall_rows.hall_row_id, second_hall_rows.place_number
+FROM second_hall_rows;
 
-INSERT INTO places (place_id, hall_row_id, place_number)
+WITH third_hall_rows AS (
+    SELECT hall_row_id, i AS place_number FROM
+    hall_rows
+    CROSS JOIN generate_series(1, 6) AS i 
+    WHERE hall_id = 3
+)
+INSERT INTO places(hall_row_id, place_number)
 SELECT
-i + 36, i + 36, i
-FROM generate_series(1, 6) AS i;
-
-SELECT setval('places_place_id_seq', (SELECT MAX(places.place_id) FROM places));
+third_hall_rows.hall_row_id, third_hall_rows.place_number
+FROM third_hall_rows;
 
 
-INSERT INTO movies(movie_id, movie_name, premier_date, genre, duration, age_rating)
+
+
+
+INSERT INTO movies(movie_name, premier_date, genre, duration, age_rating)
 SELECT
-i, 'movie_name_' || i,
-to_timestamp(floor(random() * (1749589200 - 1672520400)) + 1672520400),
+'movie_name_' || i,
+(NOW() + (24 * i || ' hours')::interval)::date,
 (ARRAY['фэнтэзи', 'фантастика', 'хоррор', 'драма', 'комедия', 'мелодрама', 'документальный'])[floor(random() * 7) + 1],
 (ARRAY[7200, 8400, 5400, 10800])[floor(random() * 4) + 1],
 (ARRAY['PG', 'PG-13', 'R'])[floor(random() * 3) + 1]
-FROM generate_series(1, 1000) AS i;
-
-SELECT setval('movies_movie_id_seq', (SELECT MAX(movies.movie_id) FROM movies));
+FROM generate_series(1, 20) AS i;
 
 
 INSERT INTO users(user_id, user_name, user_email, user_login, user_password, user_role)
@@ -169,33 +186,120 @@ FROM generate_series(1, 100) AS i;
 
 SELECT setval('customers_customer_id_seq', (SELECT MAX(customers.customer_id) FROM customers));
 
+
 WITH current_movies AS (
-    SELECT movie_id, premier_date, duration FROM movies
+    SELECT movie_id, premier_date, duration, i AS current_repeat,
+    CASE
+        WHEN i IN (1, 2) THEN 12
+        WHEN i IN (3, 4) THEN 17
+        WHEN i IN (5,6,7) THEN 20
+    END AS showtime
+    FROM movies CROSS JOIN generate_series(1, 7) AS i
 )
+
 INSERT INTO movie_sessions(movie_id, hall_id, date_of_start, date_of_end, ticket_price)
-SELECT cm.movie_id, (ARRAY[1,2,3])[floor(random() * 3) + 1],
-cm.premier_date::timestamp + (i * 24 + (ARRAY[10, 15, 21])[(i % 3) + 1] || ' hours')::interval + ((ARRAY[20, 25, 30])[(i % 3) + 1]  || ' minutes')::interval,
-cm.premier_date::timestamp + (i * 24 + (ARRAY[10, 15, 21])[(i % 3) + 1] || ' hours')::interval + ((ARRAY[20, 25, 30])[(i % 3) + 1]  || ' minutes')::interval + (duration || ' seconds')::interval,
-(ARRAY[200, 250, 300, 400, 500, 700, 200, 580, 900, 1000])[floor(random() * 10) + 1]
-FROM current_movies AS cm CROSS JOIN generate_series(1, 10) AS i;
+SELECT 
+cm.movie_id, 
+1,
+cm.premier_date::timestamp + (cm.current_repeat * 24 + cm.showtime || ' hours')::interval,
+cm.premier_date::timestamp + (cm.current_repeat * 24 + cm.showtime + (duration::float / 3600)::integer || ' hours')::interval,
+(ARRAY[500, 800, 850, 900, 1000])[floor(random() * 5) + 1]
+FROM current_movies AS cm;
 
 
 
-WITH tickets_movie_sessions AS (
-    SELECT movie_session_id, hall_id, ticket_price FROM movie_sessions
+
+WITH current_movies AS (
+    SELECT movie_id, premier_date, duration, i AS current_repeat,
+    CASE
+        WHEN i IN (1, 2) THEN 12
+        WHEN i IN (3, 4) THEN 17
+        WHEN i IN (5,6,7) THEN 20
+    END AS showtime
+    FROM movies CROSS JOIN generate_series(1, 7) AS i
 )
 
-INSERT INTO tickets (movie_session_id, place_id, ticket_price)
-SELECT tickets_movie_sessions.movie_session_id, places.place_id, tickets_movie_sessions.ticket_price
-FROM tickets_movie_sessions
-INNER JOIN hall_rows ON tickets_movie_sessions.hall_id = hall_rows.hall_id
-INNER JOIN places ON hall_rows.hall_row_id = places.hall_row_id;
+INSERT INTO movie_sessions(movie_id, hall_id, date_of_start, date_of_end, ticket_price)
+SELECT 
+cm.movie_id, 
+2,
+cm.premier_date::timestamp + (cm.current_repeat * 24 + cm.showtime || ' hours')::interval,
+cm.premier_date::timestamp + (cm.current_repeat * 24 + cm.showtime + (duration::float / 3600)::integer || ' hours')::interval,
+(ARRAY[500, 800, 850, 900, 1000])[floor(random() * 5) + 1]
+FROM current_movies AS cm;
+
+
+
+
+WITH current_movies AS (
+    SELECT movie_id, premier_date, duration, i AS current_repeat,
+    CASE
+        WHEN i IN (1, 2) THEN 12
+        WHEN i IN (3, 4) THEN 17
+        WHEN i IN (5,6,7) THEN 20
+    END AS showtime
+    FROM movies CROSS JOIN generate_series(1, 7) AS i
+)
+
+INSERT INTO movie_sessions(movie_id, hall_id, date_of_start, date_of_end, ticket_price)
+SELECT 
+cm.movie_id, 
+3,
+cm.premier_date::timestamp + (cm.current_repeat * 24 + cm.showtime || ' hours')::interval,
+cm.premier_date::timestamp + (cm.current_repeat * 24 + cm.showtime + (duration::float / 3600)::integer || ' hours')::interval,
+(ARRAY[500, 800, 850, 900, 1000])[floor(random() * 5) + 1]
+FROM current_movies AS cm;
+
+
+
+WITH fh_movie_sessions AS (
+    SELECT movie_sessions.movie_session_id, places.place_id, movie_sessions.date_of_start FROM movie_sessions
+    INNER JOIN halls ON movie_sessions.hall_id = halls.hall_id
+    INNER JOIN hall_rows ON halls.hall_id = hall_rows.hall_id
+    INNER JOIN places ON hall_rows.hall_row_id = places.hall_row_id
+    WHERE movie_sessions.hall_id = 1
+)
+INSERT INTO tickets(movie_session_id, place_id, ticket_price)
+SELECT fh_ms.movie_session_id, fh_ms.place_id, (ARRAY[500, 800, 850, 900, 1000])[floor(random() * 5) + 1]
+
+FROM fh_movie_sessions AS fh_ms;
+
+
+WITH fh_movie_sessions AS (
+    SELECT movie_sessions.movie_session_id, places.place_id, movie_sessions.date_of_start FROM movie_sessions
+    INNER JOIN hall_rows ON movie_sessions.hall_id = hall_rows.hall_id
+    INNER JOIN places ON hall_rows.hall_row_id = places.hall_row_id
+     WHERE movie_sessions.hall_id = 2
+)
+INSERT INTO tickets(movie_session_id, place_id, ticket_price)
+SELECT fh_ms.movie_session_id, fh_ms.place_id, (ARRAY[500, 800, 850, 900, 1000])[floor(random() * 5) + 1]
+
+FROM fh_movie_sessions AS fh_ms;
+
+
+
+WITH fh_movie_sessions AS (
+    SELECT movie_sessions.movie_session_id, places.place_id, movie_sessions.date_of_start FROM movie_sessions
+    INNER JOIN hall_rows ON movie_sessions.hall_id = hall_rows.hall_id
+    INNER JOIN places ON hall_rows.hall_row_id = places.hall_row_id
+     WHERE movie_sessions.hall_id = 3
+)
+INSERT INTO tickets(movie_session_id, place_id, ticket_price)
+SELECT fh_ms.movie_session_id, fh_ms.place_id, (ARRAY[500, 800, 850, 900, 1000])[floor(random() * 5) + 1]
+
+FROM fh_movie_sessions AS fh_ms;
+
+
+
 
 WITH current_tickets AS (
-    SELECT ticket_id, movie_session_id FROM tickets
+    SELECT tickets.ticket_id, ms.date_of_start - (floor(random() * 4) + 1 || ' hours')::interval AS date_of_booked FROM tickets 
+    INNER JOIN movie_sessions AS ms ON tickets.movie_session_id = ms.movie_session_id
+     WHERE tickets.ticket_id % 2 = 0
 )
-INSERT INTO booked_tickets (ticket_id, customer_id, date_of_booked)
-SELECT ct.ticket_id, (ARRAY[null, null, null, null, floor(random() * 100) + 1])[floor(random() * 5) + 1], ms.date_of_start - (floor(random() * 5) + 1 || ' hours')::interval
-FROM current_tickets AS ct
-INNER JOIN movie_sessions AS ms ON ct.movie_session_id = ms.movie_session_id;
+INSERT INTO booked_tickets(ticket_id, date_of_booked) SELECT ticket_id, date_of_booked  FROM current_tickets;
 
+WITH current_customers AS (
+    SELECT customer_id FROM customers
+)
+UPDATE booked_tickets SET customer_id = current_customers.customer_id FROM current_customers WHERE booked_tickets.ticket_id % 3 = 0; 
