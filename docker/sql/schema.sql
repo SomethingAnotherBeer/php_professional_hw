@@ -167,7 +167,7 @@ FROM third_hall_rows;
 INSERT INTO movies(movie_name, premier_date, genre, duration, age_rating)
 SELECT
 'movie_name_' || i,
-(NOW() + (24 * i || ' hours')::interval)::date,
+((NOW() - INTERVAL '1 week') + (24 * (i - 1) || ' hours')::interval)::date,
 (ARRAY['фэнтэзи', 'фантастика', 'хоррор', 'драма', 'комедия', 'мелодрама', 'документальный'])[floor(random() * 7) + 1],
 (ARRAY[7200, 8400, 5400, 10800])[floor(random() * 4) + 1],
 (ARRAY['PG', 'PG-13', 'R'])[floor(random() * 3) + 1]
@@ -206,8 +206,8 @@ INSERT INTO movie_sessions(movie_id, hall_id, date_of_start, date_of_end, ticket
 SELECT 
 cm.movie_id, 
 1,
-cm.premier_date::timestamp + (cm.current_repeat * 24 + cm.showtime || ' hours')::interval,
-cm.premier_date::timestamp + (cm.current_repeat * 24 + cm.showtime + (duration::float / 3600)::integer || ' hours')::interval,
+cm.premier_date::timestamp + ((cm.current_repeat - 1) * 24 + cm.showtime || ' hours')::interval,
+cm.premier_date::timestamp + ((cm.current_repeat - 1) * 24 + cm.showtime + (duration::float / 3600)::integer || ' hours')::interval,
 (ARRAY[500, 800, 850, 900, 1000])[floor(random() * 5) + 1]
 FROM current_movies AS cm;
 
@@ -228,8 +228,8 @@ INSERT INTO movie_sessions(movie_id, hall_id, date_of_start, date_of_end, ticket
 SELECT 
 cm.movie_id, 
 2,
-cm.premier_date::timestamp + (cm.current_repeat * 24 + cm.showtime || ' hours')::interval,
-cm.premier_date::timestamp + (cm.current_repeat * 24 + cm.showtime + (duration::float / 3600)::integer || ' hours')::interval,
+cm.premier_date::timestamp + ((cm.current_repeat - 1) * 24 + cm.showtime || ' hours')::interval,
+cm.premier_date::timestamp + ((cm.current_repeat - 1) * 24 + cm.showtime + (duration::float / 3600)::integer || ' hours')::interval,
 (ARRAY[500, 800, 850, 900, 1000])[floor(random() * 5) + 1]
 FROM current_movies AS cm;
 
@@ -250,8 +250,8 @@ INSERT INTO movie_sessions(movie_id, hall_id, date_of_start, date_of_end, ticket
 SELECT 
 cm.movie_id, 
 3,
-cm.premier_date::timestamp + (cm.current_repeat * 24 + cm.showtime || ' hours')::interval,
-cm.premier_date::timestamp + (cm.current_repeat * 24 + cm.showtime + (duration::float / 3600)::integer || ' hours')::interval,
+cm.premier_date::timestamp + ((cm.current_repeat - 1) * 24 + cm.showtime || ' hours')::interval,
+cm.premier_date::timestamp + ((cm.current_repeat - 1) * 24 + cm.showtime + (duration::float / 3600)::integer || ' hours')::interval,
 (ARRAY[500, 800, 850, 900, 1000])[floor(random() * 5) + 1]
 FROM current_movies AS cm;
 
@@ -263,6 +263,7 @@ WITH fh_movie_sessions AS (
     INNER JOIN hall_rows ON halls.hall_id = hall_rows.hall_id
     INNER JOIN places ON hall_rows.hall_row_id = places.hall_row_id
     WHERE movie_sessions.hall_id = 1
+    ORDER BY movie_sessions.movie_session_id
 )
 INSERT INTO tickets(movie_session_id, place_id, ticket_price)
 SELECT fh_ms.movie_session_id, fh_ms.place_id, (ARRAY[500, 800, 850, 900, 1000])[floor(random() * 5) + 1]
@@ -275,6 +276,7 @@ WITH fh_movie_sessions AS (
     INNER JOIN hall_rows ON movie_sessions.hall_id = hall_rows.hall_id
     INNER JOIN places ON hall_rows.hall_row_id = places.hall_row_id
      WHERE movie_sessions.hall_id = 2
+     ORDER BY movie_sessions.movie_session_id
 )
 INSERT INTO tickets(movie_session_id, place_id, ticket_price)
 SELECT fh_ms.movie_session_id, fh_ms.place_id, (ARRAY[500, 800, 850, 900, 1000])[floor(random() * 5) + 1]
@@ -288,6 +290,7 @@ WITH fh_movie_sessions AS (
     INNER JOIN hall_rows ON movie_sessions.hall_id = hall_rows.hall_id
     INNER JOIN places ON hall_rows.hall_row_id = places.hall_row_id
      WHERE movie_sessions.hall_id = 3
+     ORDER BY movie_sessions.movie_session_id
 )
 INSERT INTO tickets(movie_session_id, place_id, ticket_price)
 SELECT fh_ms.movie_session_id, fh_ms.place_id, (ARRAY[500, 800, 850, 900, 1000])[floor(random() * 5) + 1]

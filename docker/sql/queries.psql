@@ -1,0 +1,74 @@
+#Показ фильмов на сегодня
+SELECT m.movie_id, m.movie_name FROM movies AS m WHERE m.premier_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '1 day';
+
+#Формирование афиши на сегодня
+SELECT m.movie_id, m.movie_name, h.hall_name, ms.date_of_start, ms.date_of_end FROM movies AS m
+INNER JOIN movie_sessions AS ms ON m.movie_id = ms.movie_id
+INNER JOIN halls AS h ON ms.hall_id = h.hall_id
+WHERE ms.date_of_start BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '1 day';
+
+#Подсчет кл-ва проданных билетов за неделю
+SELECT COUNT(bt.booked_ticket_id) AS booked_tickets_count FROM booked_tickets AS bt WHERE bt.date_of_booked BETWEEN CURRENT_DATE - INTERVAL '1 week' AND CURRENT_DATE;
+
+#Вывод проданных билетов за неделю
+SELECT bt.date_of_booked, bt.ticket_id, m.movie_name, h.hall_name FROM booked_tickets AS bt
+INNER JOIN tickets AS t ON bt.ticket_id = t.ticket_id
+INNER JOIN movie_sessions AS ms ON t.movie_session_id = ms.movie_session_id
+INNER JOIN movies AS m ON ms.movie_id = m.movie_id
+INNER JOIN halls AS h ON ms.hall_id = h.hall_id
+WHERE bt.date_of_booked BETWEEN CURRENT_DATE - INTERVAL '1 week' AND CURRENT_DATE;
+
+#Вывод трех самых прибыльных фильмов за неделю
+SELECT m.movie_id, m.movie_name
+FROM movies AS m
+INNER JOIN movie_sessions AS ms ON m.movie_id = ms.movie_session_id
+INNER JOIN tickets AS t ON ms.movie_session_id = t.movie_session_id
+INNER JOIN booked_tickets AS bt ON t.ticket_id = bt.ticket_id
+WHERE ms.date_of_start BETWEEN CURRENT_DATE - INTERVAL '7 days' AND CURRENT_DATE
+GROUP BY m.movie_id, m.movie_name
+ORDER BY SUM(t.ticket_price) DESC
+LIMIT 3;
+
+#Вывод конкретного киносеанса с минимальной и максимальной стоимостью билета
+SELECT m.movie_id, ms.movie_session_id, m.movie_name, MIN(t.ticket_price), MAX(t.ticket_price) FROM movies AS m
+INNER JOIN movie_sessions AS ms ON m.movie_id = ms.movie_id
+INNER JOIN tickets AS t ON ms.movie_session_id = t.movie_session_id
+WHERE ms.movie_session_id = 1
+GROUP BY m.movie_id, ms.movie_session_id, m.movie_name;
+
+
+#Схема зала c показом свободных и занятых мест на конкретный сеанс
+SELECT m.movie_id, ms.movie_session_id, m.movie_name, h.hall_name, hr.hall_row_number, p.place_number,
+CASE
+    WHEN bt.booked_ticket_id IS NULL THEN 'Свободно'
+    ELSE 'Занято'
+END AS place_status
+FROM movies AS m 
+INNER JOIN movie_sessions AS ms ON m.movie_id = ms.movie_id
+INNER JOIN tickets AS t ON ms.movie_session_id = t.movie_session_id
+LEFT JOIN booked_tickets AS bt ON t.ticket_id = bt.ticket_id
+INNER JOIN places AS p ON t.place_id = p.place_id
+INNER JOIN hall_rows AS hr ON p.hall_row_id = hr.hall_row_id
+INNER JOIN halls AS h ON hr.hall_id = h.hall_id
+WHERE ms.movie_session_id = 1
+ORDER BY p.place_number;
+
+WITH hall_schema AS (
+    SELECT m.movie_id, ms.movie_session_id, m.movie_name, h.hall_name, hr.hall_row_number, p.place_number,
+    CASE
+        WHEN bt.booked_ticket_id IS NULL THEN 'Свободно'
+        ELSE 'Занято'
+    END AS place_status
+    FROM movies AS m 
+    INNER JOIN movie_sessions AS ms ON m.movie_id = ms.movie_id
+    INNER JOIN tickets AS t ON ms.movie_session_id = t.movie_session_id
+    LEFT JOIN booked_tickets AS bt ON t.ticket_id = bt.ticket_id
+    INNER JOIN places AS p ON t.place_id = p.place_id
+    INNER JOIN hall_rows AS hr ON p.hall_row_id = hr.hall_row_id
+    INNER JOIN halls AS h ON hr.hall_id = h.hall_id
+    WHERE ms.movie_session_id = 201
+    ORDER BY place_number
+)
+SELECT hall_schema.hall_row_number, ARRAY_AGG(hall_schema.place_number || ' ' || hall_schema.place_status) FROM
+hall_schema GROUP BY hall_schema.hall_row_number ORDER BY hall_schema.hall_row_number; 
+
