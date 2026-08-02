@@ -51,8 +51,9 @@ INNER JOIN places AS p ON t.place_id = p.place_id
 INNER JOIN hall_rows AS hr ON p.hall_row_id = hr.hall_row_id
 INNER JOIN halls AS h ON hr.hall_id = h.hall_id
 WHERE ms.movie_session_id = 1
-ORDER BY p.place_number;
+ORDER BY hr.hall_row_number, p.place_number;
 
+#Визуальная схема зала
 WITH hall_schema AS (
     SELECT m.movie_id, ms.movie_session_id, m.movie_name, h.hall_name, hr.hall_row_number, p.place_number,
     CASE
@@ -66,9 +67,12 @@ WITH hall_schema AS (
     INNER JOIN places AS p ON t.place_id = p.place_id
     INNER JOIN hall_rows AS hr ON p.hall_row_id = hr.hall_row_id
     INNER JOIN halls AS h ON hr.hall_id = h.hall_id
-    WHERE ms.movie_session_id = 201
-    ORDER BY place_number
+    WHERE ms.movie_session_id = 1
+    ORDER BY hr.hall_row_number, p.place_number
 )
-SELECT hall_schema.hall_row_number, ARRAY_AGG(hall_schema.place_number || ' ' || hall_schema.place_status) FROM
-hall_schema GROUP BY hall_schema.hall_row_number ORDER BY hall_schema.hall_row_number; 
+SELECT hs.hall_row_number, ARRAY_AGG(CASE WHEN hs.place_status = 'Свободно' THEN '|' || hs.place_number::varchar(3) || '|' ELSE '|B|' END) AS places FROM
+hall_schema AS hs GROUP BY hs.hall_row_number;
+
+
+
 

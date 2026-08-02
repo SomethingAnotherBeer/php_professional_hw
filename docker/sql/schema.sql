@@ -127,7 +127,7 @@ FROM generate_series(1, 6) AS i;
 
 
 WITH first_hall_rows AS (
-    SELECT hall_row_id, ROW_NUMBER() OVER(ORDER BY hall_row_id) AS place_number FROM
+    SELECT hall_row_id, ROW_NUMBER() OVER(PARTITION BY hall_row_id ORDER BY hall_row_id) AS place_number FROM
     hall_rows
     CROSS JOIN generate_series(1, 24)
     WHERE hall_id = 1
@@ -139,7 +139,7 @@ FROM first_hall_rows;
 
 
 WITH second_hall_rows AS (
-    SELECT hall_row_id, ROW_NUMBER() OVER(ORDER BY hall_row_id) AS place_number FROM
+    SELECT hall_row_id, ROW_NUMBER() OVER(PARTITION BY hall_row_id ORDER BY hall_row_id) AS place_number FROM
     hall_rows
     CROSS JOIN generate_series(1, 12)
     WHERE hall_id = 2
@@ -150,7 +150,7 @@ second_hall_rows.hall_row_id, second_hall_rows.place_number
 FROM second_hall_rows;
 
 WITH third_hall_rows AS (
-    SELECT hall_row_id, ROW_NUMBER() OVER(ORDER BY hall_row_id) AS place_number FROM
+    SELECT hall_row_id, ROW_NUMBER() OVER(PARTITION BY hall_row_id ORDER BY hall_row_id) AS place_number FROM
     hall_rows
     CROSS JOIN generate_series(1, 6)
     WHERE hall_id = 3
@@ -198,6 +198,7 @@ WITH current_movies AS (
         WHEN i IN (1, 2) THEN 12
         WHEN i IN (3, 4) THEN 17
         WHEN i IN (5,6,7) THEN 20
+        ELSE 17
     END AS showtime
     FROM movies CROSS JOIN generate_series(1, 7) AS i
 )

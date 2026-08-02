@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS date_of_booked_index ON booked_tickets(date_of_booked);
