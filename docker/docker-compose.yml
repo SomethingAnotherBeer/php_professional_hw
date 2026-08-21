@@ -32,11 +32,13 @@ services:
       - elasticsearch
     entrypoint: >
       sh -c "
-        until curl -s -u elastic:$${ELASTIC_PASSWORD} $${ELASTIC_URL}/_cluster/health | grep -q '\"status\":\"\(green\|yellow\)\"'; do
+        echo 'Начало';
+        until [ \"\$(curl -s -o /dev/null -w '%{http_code}' -u elastic:$${ELASTIC_PASSWORD} $${ELASTIC_URL}/_cluster/health)\" = \"200\" ]; do
+          printf '.';
           sleep 2;
         done;
-        curl -s -u elastic:$${ELASTIC_PASSWORD} -X PUT $${ELASTIC_URL}/$${ELASTIC_INDEX} -H 'Content-Type: application/json' --data-binary @/data/index_create.json
-        curl -s -u elastic:$${ELASTIC_PASSWORD} -X POST $${ELASTIC_URL}/$${ELASTIC_INDEX}/_bulk -H 'Content-Type: application/x-ndjson' --data-binary @/data/books.json
+        curl  -u elastic:$${ELASTIC_PASSWORD} -X PUT $${ELASTIC_URL}/$${ELASTIC_INDEX} -H 'Content-Type: application/json' --data-binary @/data/index_create.json
+        curl  -u elastic:$${ELASTIC_PASSWORD} -X POST $${ELASTIC_URL}/$${ELASTIC_INDEX}/_bulk -H 'Content-Type: application/x-ndjson' --data-binary @/data/books.json
         echo '\nИмпорт завершен!';
       "
 
