@@ -24,8 +24,8 @@ services:
       - ELASTIC_INDEX=${ELASTIC_INDEX}
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
     volumes:
-      - ./init-data/index_create.json:/data/index_create.json
-      - ./init-data/books.json:/data/books.json
+      - ./init_data/index_create.json:/data/index_create.json
+      - ./init_data/books.json:/data/books.json
     networks:
       - elastic_network
     depends_on:
