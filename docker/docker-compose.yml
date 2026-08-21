@@ -40,11 +40,12 @@ services:
         echo '\nИмпорт завершен!';
       "
 
-  php-app:
+  php-elastic-app:
     build:
       context: ./cli
       dockerfile: Dockerfile
-    container_name: php-app
+    image: php-elastic-app:latest
+    container_name: php-elastic-app
     env_file:
       - .env
     volumes:
