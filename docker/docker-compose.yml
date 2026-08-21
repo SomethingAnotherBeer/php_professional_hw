@@ -1,0 +1,60 @@
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ES_JAVA_OPTS=-Xms4g -Xmx4g
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - elastic_network
+
+  elastic-init:
+    image: curlimages/curl:8.7.1
+    container_name: elastic-init
+    environment:
+      - ELASTIC_URL=http://elasticsearch:9200
+    volumes:
+      - ./init-data/index_create.json:/data/index_create.json
+      - ./init-data/books.json:/data/books.json
+    networks:
+      - elastic_network
+    depends_on:
+      - elasticsearch
+    entrypoint: >
+      sh -c "
+        until curl -s $${ELASTIC_URL}/_cluster/health | grep -q '\"status\":\"\(green\|yellow\)\"'; do
+          sleep 2;
+        done;
+        curl -s -X PUT $${ELASTIC_URL}/$${ELASTIC_INDEX} -H 'Content-Type: application/x-ndjson' --data-binary @/data/index_create.json
+        curl -s -X POST $${ELASTIC_URL_WITH_INDEX}/_bulk -H 'Content-Type: application/x-ndjson' --data-binary @/data/books.json
+        echo '\nИмпорт завершен!';
+      "
+
+  php-app:
+    build:
+      context: ./cli
+      dockerfile: Dockerfile
+    container_name: php-app
+    env_file:
+      - .env
+    depends_on:
+      - elasticsearch
+      - elastic-init
+    networks:
+      - elastic_network
+
+volumes:
+  es_data:
+    driver: local
+
+networks:
+  elastic_network:
+    driver: bridge
