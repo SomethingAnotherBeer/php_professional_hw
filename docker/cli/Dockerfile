@@ -13,4 +13,4 @@ RUN apt-get update && apt-get install -y \
 
 USER 1000:1000
 
-WORKDIR /var/www/app
+WORKDIR /app
