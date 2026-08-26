@@ -11,5 +11,12 @@
             "name": "Eugene Zarianski"
         }
     ],
-    "require": {}
+    "require": {
+        "elasticsearch/elasticsearch": "^9.5"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    }
 }
