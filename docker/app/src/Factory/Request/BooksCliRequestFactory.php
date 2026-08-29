@@ -6,7 +6,7 @@ use App\Exception\Request\RequestFieldNotSpecifiedException;
 use App\Exception\Request\RequestFieldTypeException;
 use App\Request\BooksRequest;
 
-class BooksCliRequestFactory extends CliRequestFactory
+class BooksCliRequestFactory
 {
     public function makeBooksRequest(array $params): BooksRequest
     {
