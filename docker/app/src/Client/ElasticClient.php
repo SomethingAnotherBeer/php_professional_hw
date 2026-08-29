@@ -12,12 +12,18 @@ use Elastic\Elasticsearch\ClientBuilder;
 
 class ElasticClient
 {
+    protected static ?ElasticClient $elasticClient = null;
+
     protected Client $client;
     protected string $index;
     protected array $options = [];
 
     public static function makeClient(array $params)
     {
+        if (static::$elasticClient) {
+            return static::$elasticClient;
+        }
+
         if (!array_key_exists('elastic_host', $params) || !$params['elastic_host']) {
             throw new ClientHostNotSpecifiedException("не указан хост elastic");
         }
@@ -38,19 +44,12 @@ class ElasticClient
 
     }
 
-    public function __construct(array $params)
+    protected function __construct(array $params)
     {
         $this->client = ClientBuilder::create()->setHosts($params['elastic_host'])->setBasicAuthentication($params['elastic_user'], $params['elastic_password'])
             ->build();
 
         $this->index = $params['elastic_index'];
-
-        if (array_key_exists('fuzziness', $params)) {
-            $available_fuzziness_values = [0, 1, 2, 'AUTO'];
-            if (in_array($params['fuzziness'], $available_fuzziness_values)) {
-                $this->options['fuzziness'] = $params['fuzziness'];
-            }
-        }
     }
 
     public function query(string $query_string)
