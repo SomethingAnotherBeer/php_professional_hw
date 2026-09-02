@@ -15,6 +15,7 @@ class ElasticClient
     protected static ?ElasticClient $elasticClient = null;
 
     protected Client $client;
+    protected array $query;
     protected string $index;
     protected array $options = [];
 
@@ -24,19 +25,19 @@ class ElasticClient
             return static::$elasticClient;
         }
 
-        if (!array_key_exists('elastic_host', $params) || !$params['elastic_host']) {
+        if (!array_key_exists('ELASTIC_URL', $params) || !$params['ELASTIC_URL']) {
             throw new ClientHostNotSpecifiedException("не указан хост elastic");
         }
 
-        if (!array_key_exists('elastic_index', $params) || !$params['elastic_index']) {
+        if (!array_key_exists('ELASTIC_INDEX', $params) || !$params['ELASTIC_INDEX']) {
             throw new ClientTargetNotSpecifiedException("Не указан индекс elastic");
         }
 
-        if (!array_key_exists('elastic_user', $params) || !$params['elastic_user']) {
+        if (!array_key_exists('ELASTIC_USER', $params) || !$params['ELASTIC_USER']) {
             throw new ClientUserNotSpecifiedException("Не указан пользователь elastic");
         }
 
-        if (!array_key_exists('elastic_password', $params) || !$params['elastic_password']) {
+        if (!array_key_exists('ELASTIC_PASSWORD', $params) || !$params['ELASTIC_PASSWORD']) {
             throw new ClientPasswordNotSpecifiedException("Не указан пароль elastic");
         }
 
@@ -46,27 +47,30 @@ class ElasticClient
 
     protected function __construct(array $params)
     {
-        $this->client = ClientBuilder::create()->setHosts($params['elastic_host'])->setBasicAuthentication($params['elastic_user'], $params['elastic_password'])
+        $this->client = ClientBuilder::create()->setHosts([$params['ELASTIC_URL']])->setBasicAuthentication($params['ELASTIC_USER'], $params['ELASTIC_PASSWORD'])
             ->build();
 
-        $this->index = $params['elastic_index'];
+        $this->index = $params['ELASTIC_INDEX'];
     }
 
-    public function query(string $query_string)
+
+    public function query(array $params, int $from, int $size)
     {
-        $query_args = $this->prepareAndGetQueryString($query_string);
-        
-    }
+        $query = 
+        [   'index' => $this->index,
+            'body' =>
+            [   
+                'from' => $from,
+                'size' => $size,
+                'query' => $params
+            ]
+        ];  
 
-    private function prepareAndGetQueryString(string $query_string): array
-    {
-        $query_args = json_decode($query_string);
-        if (null === $query_args) {
-            throw new InvalidQueryException("Некорректный формат запроса");
-        }
+        $response = $this->client->search($query);
+        var_dump($response);
 
-        return $query_args;
-    }
+
+    }   
 
 
 }

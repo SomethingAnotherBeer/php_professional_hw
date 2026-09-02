@@ -4,7 +4,7 @@ namespace App\Client;
 
 abstract class Client
 {
-    protected mixed $client;
+    /*protected mixed $client;
 
     abstract public static function makeClient(array $params);
 
@@ -13,7 +13,7 @@ abstract class Client
 
     abstract public function getAll(string $query_string = ''): mixed;
 
-    abstract public function get(string $key): mixed;
+    abstract public function get(string $key): mixed;*/
 
 
 
