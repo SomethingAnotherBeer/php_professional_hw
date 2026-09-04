@@ -42,7 +42,7 @@ class BooksCliController extends CliController
             'category' => 'Введите наименование категории: ',
             'book_price_from' => 'Введите цену от: ',
             'book_price_to' => 'Введите цену до: ',
-            'in_stock' => 'В наличии (y/n)',
+            'in_stock' => 'В наличии (y/yes, нажмите enter для пропуска)',
         ];
 
         $input_params = [];
