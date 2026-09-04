@@ -47,7 +47,7 @@ class BooksCliView
         foreach ($bookList as $book) {
             $current_sku_len = null !== $book->sku ? $min_len + mb_strlen($book->sku, 'UTF-8') : $min_len;
             $current_title_len = null !== $book->title ? $min_len + mb_strlen($book->title, 'UTF-8') : $min_len;
-            $current_category_len = null !== $book->category ? $min_len + mb_strlen($book->category) : $min_len;
+            $current_category_len = null !== $book->category ? $min_len + mb_strlen($book->category, 'UTF-8') : $min_len;
             $current_price_len = null !== $book->price ? $min_len + mb_strlen((string)$book->price) : $min_len;
             $current_stock_len = null !== $book->bookStockList ? $min_len + $this->getStockLen($book->bookStockList) : $min_len;
 
@@ -69,8 +69,7 @@ class BooksCliView
 
             
         }
-        print_r($len_params);
-
+        
         return $len_params;
 
     }
@@ -93,23 +92,23 @@ class BooksCliView
 
     private function getFormattedSku(Book $book, int $format_len): string
     {
-        return sprintf("%-{$format_len}s", $book->sku ?? '');
+        return $this->getFormatted($book->sku ?? '', $format_len);
     }
 
     private function getFormattedTitle(Book $book, int $format_len): string
     {
-        return sprintf("%-{$format_len}s", $book->title ?? '');
+        return $this->getFormatted($book->title ?? '', $format_len);
     }
 
     private function getFormattedCategory(Book $book, int $format_len)
     {
-        return sprintf("%-{$format_len}s", $book->category);
+        return $this->getFormatted($book->category, $format_len);
     }
 
     private function getFormattedPrice(Book $book, int $format_len): string
     {
-        return (null !== $book->price) ? sprintf("%-{$format_len}.2f", $book->price) 
-            : sprintf("%-{$format_len}s", '');
+        return (null !== $book->price) ? $this->getFormatted((string)round($book->price, 2), $format_len)
+            : $this->getFormatted('', $format_len);
     }
 
     private function getFormattedStock(Book $book, int $format_len): string
@@ -118,7 +117,14 @@ class BooksCliView
         foreach ($book->bookStockList as $bookStock) {
             $book_stock_list[] = $bookStock->asString();
         }
-        return sprintf("%-{$format_len}s", implode(", ", $book_stock_list));
+        $book_stock_list_str = implode(', ', $book_stock_list);
+        return $this->getFormatted($book_stock_list_str, $format_len);
+    }
+
+    private function getFormatted(string $value, int $len): string
+    {
+        $current_len = mb_strlen($value);
+        return $value . str_repeat(' ', $len - $current_len);
     }
 
 }

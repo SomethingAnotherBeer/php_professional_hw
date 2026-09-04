@@ -57,22 +57,18 @@ class BooksCliController extends CliController
         $this->booksCliView->render($response);
         
 
-        /*$next = '';
-        if ($response->count() > 0) {
-            $next = readline('Введите r для получения следующих записей или q для выхода');
-        }
-
+        $next = 'r';
         $offset_size = 100;
 
-        while ($response->count() > 0 && 'q' === $next) {
+        while ($response->count() > 0 && 'r' === $next) {
+            $next = readline('Введите r для получения следующих записей или q для выхода: ');
             $current_from = $booksRequest->getFrom() + $offset_size;
             $booksRequest->setFrom($current_from);
 
             $response = $this->booksService->searchBooks($booksRequest);
             $this->booksCliView->render($response);
-            $next = readline('Введите r для получения следующих записей или q для выхода');
 
-        }*/
+        }
 
     }
 
