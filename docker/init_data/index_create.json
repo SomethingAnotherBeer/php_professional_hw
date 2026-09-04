@@ -9,7 +9,7 @@
             "analyzer": {
                 "my_russian": {
                     "type": "custom",
-                    "tokenizer": "standart",
+                    "tokenizer": "standard",
                     "filter": ["lowercase", "ru_stop", "ru_stemmer"]
                 }
             }
@@ -18,13 +18,15 @@
     "mappings": {
         "properties": {
             "title": {
-                "type": "text"
+                "type": "text",
+                "analyzer": "my_russian"
             },
             "sku": {
                 "type": "text"
             },
             "category": {
-                "type": "text"
+                "type": "text",
+                "analyzer": "my_russian"
             },
             "price": {
                 "type": "float"
@@ -33,7 +35,8 @@
                 "type": "nested",
                 "properties": {
                     "shop": {
-                        "type": "text"
+                        "type": "text",
+                        "analyzer": "my_russian"
                     },
                     "stock": {
                         "type": "integer"

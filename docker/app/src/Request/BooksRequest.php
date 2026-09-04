@@ -31,8 +31,8 @@ class BooksRequest
         $this->book_price_from = $params['book_price_from'] ?? null;
         $this->book_price_to = $params['book_price_to'] ?? null;
         $this->in_stock = $params['in_stock'] ?? null;
-        $this->from = $params['from'] ?? 100;
-        $this->size = $params['size'] ?? 0;
+        $this->from = $params['from'] ?? 0;
+        $this->size = $params['size'] ?? 100;
     }
 
     public function getBookName(): ?string

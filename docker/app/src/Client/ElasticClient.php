@@ -9,6 +9,7 @@ use App\Exception\Client\ClientUserNotSpecifiedException;
 use App\Exception\Query\InvalidQueryException;
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
+use Elastic\Elasticsearch\Response\Elasticsearch;
 
 class ElasticClient
 {
@@ -54,20 +55,15 @@ class ElasticClient
     }
 
 
-    public function query(array $params, int $from, int $size)
+    public function query(array $params): Elasticsearch
     {
         $query = 
         [   'index' => $this->index,
-            'body' =>
-            [   
-                'from' => $from,
-                'size' => $size,
-                'query' => $params
-            ]
+            'body' => $params
         ];  
 
         $response = $this->client->search($query);
-        var_dump($response);
+        return $response;
 
 
     }   

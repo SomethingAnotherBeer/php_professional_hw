@@ -4,19 +4,23 @@ namespace App\Service;
 
 
 use App\Client\ElasticClient;
+use App\Factory\ValueObject\BookValueObjectFactory;
 use App\Request\BooksRequest;
+use App\ValueObject\BookList;
 use App\ValueObject\Input\InputValue;
 
 class BooksService
 {
     protected ElasticClient $client;
+    protected BookValueObjectFactory $bookValueObjectFactory;
 
-    public function __construct(ElasticClient $client)
+    public function __construct(ElasticClient $client, BookValueObjectFactory $bookValueObjectFactory)
     {
         $this->client = $client;
+        $this->bookValueObjectFactory = $bookValueObjectFactory;
     }
 
-    public function searchBooks(BooksRequest $booksRequest)
+    public function searchBooks(BooksRequest $booksRequest): BookList
     {
         $book_name = $booksRequest->getBookName();
         $category = $booksRequest->getCategory();
@@ -30,7 +34,7 @@ class BooksService
         $filter_args = [];
 
         if (null !== $book_name) {
-            $must_args[] = ['match' => ['title' => $book_name]];
+            $must_args[] = ['match' => ['title' => ['query' => $book_name, 'fuzziness' => 'AUTO']]];
         }
 
         if (null !== $category) {
@@ -48,26 +52,47 @@ class BooksService
             $filter_args[] = ['range' => ['price' => $price_range]];
         }
 
-        if (null !== $in_stock) {
-            $filter_args['nested'] =
+        if (null !== $in_stock && true === $in_stock) {
+            $filter_args[] =
             [
-                'path' => 'stock',
-                'query' => [
-                    'range' => 
-                    [
-                        'stock.stock' => ['gt' => 0],
+                'nested' => 
+                [
+                    'path' => 'stock',
+                    'query' => [
+                        'range' => 
+                        [
+                            'stock.stock' => ['gt' => 0],
+                        ],
                     ],
-                ],
+                ]
             ];
         }
 
         $searchBooksQuery =
-        [   
-            'must' => $must_args,
-            'filter' => $filter_args
+        [   'from' => $from,
+            'size' => $size,
+            'query' => [
+                'bool' => [
+                    'must' => $must_args,
+                    'filter' => $filter_args
+                ]
+            ]
         ];
 
-        $this->client->query($searchBooksQuery, $from, $size);
+
+        $response = $this->client->query($searchBooksQuery);
+        $response = $response->asArray();
+        //print_r($response);
+        $response = $response['hits']['hits'] ?? [];
+        $source_response_params = [];
+
+        foreach ($response as $item) {
+            $source_response_params[] = $item['_source'];
+        }
+
+        
+
+        return $this->bookValueObjectFactory->makeBookList($source_response_params);
 
 
     }
