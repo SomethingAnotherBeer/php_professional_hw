@@ -1,0 +1,22 @@
+{
+    "name": "eugene/elastic-app",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Eugene Zarianski"
+        }
+    ],
+    "require": {
+        "elasticsearch/elasticsearch": "^9.5"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    }
+}

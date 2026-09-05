@@ -1,0 +1,69 @@
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.5.2 
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - elastic_network
+
+  elastic-init:
+    image: curlimages/curl:8.7.1
+    container_name: elastic-init
+    environment:
+      - ELASTIC_URL=${ELASTIC_URL}
+      - ELASTIC_INDEX=${ELASTIC_INDEX}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    volumes:
+      - ./init_data/index_create.json:/data/index_create.json
+      - ./init_data/books.json:/data/books.json
+    networks:
+      - elastic_network
+    depends_on:
+      - elasticsearch
+    entrypoint: >
+      sh -c "
+        echo 'Начало';
+        until [ \"\$(curl -s -o /dev/null -w '%{http_code}' -u elastic:$${ELASTIC_PASSWORD} $${ELASTIC_URL}/_cluster/health)\" = \"200\" ]; do
+          printf '.';
+          sleep 2;
+        done;
+        curl  -u elastic:$${ELASTIC_PASSWORD} -X PUT $${ELASTIC_URL}/$${ELASTIC_INDEX} -H 'Content-Type: application/json' --data-binary @/data/index_create.json
+        curl  -u elastic:$${ELASTIC_PASSWORD} -X POST $${ELASTIC_URL}/$${ELASTIC_INDEX}/_bulk -H 'Content-Type: application/x-ndjson' --data-binary @/data/books.json
+        echo '\nИмпорт завершен!';
+      "
+
+  php-elastic-app:
+    build:
+      context: ./cli
+      dockerfile: Dockerfile
+    image: php-elastic-app:latest
+    container_name: php-elastic-app
+    env_file:
+      - .env
+    volumes:
+      - ./app/:/app
+    depends_on:
+      - elasticsearch
+    networks:
+      - elastic_network
+
+volumes:
+  es_data:
+    driver: local
+
+networks:
+  elastic_network:
+    driver: bridge
