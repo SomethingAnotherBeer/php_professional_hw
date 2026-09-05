@@ -7,7 +7,6 @@ use App\Client\ElasticClient;
 use App\Factory\ValueObject\BookValueObjectFactory;
 use App\Request\BooksRequest;
 use App\ValueObject\BookList;
-use App\ValueObject\Input\InputValue;
 
 class BooksService
 {
@@ -38,7 +37,7 @@ class BooksService
         }
 
         if (null !== $category) {
-            $must_args[] = ['match' => ['category' => $category]];
+            $filter_args[] = ['term' => ['category' => $category]];
         }
 
         if (null !== $book_price_from || null !== $book_price_to) {

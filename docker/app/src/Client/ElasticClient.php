@@ -6,7 +6,6 @@ use App\Exception\Client\ClientHostNotSpecifiedException;
 use App\Exception\Client\ClientPasswordNotSpecifiedException;
 use App\Exception\Client\ClientTargetNotSpecifiedException;
 use App\Exception\Client\ClientUserNotSpecifiedException;
-use App\Exception\Query\InvalidQueryException;
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Response\Elasticsearch;

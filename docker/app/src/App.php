@@ -4,7 +4,6 @@ namespace App;
 
 use App\CliController\BooksCliController;
 use App\CliController\CliController;
-use App\Exception\CliController\PathNotFoundException;
 use App\Exception\Controller\ControllerMethodNotFoundException;
 use App\Exception\Controller\ControllerMethodNotSpecifiedException;
 use App\Exception\Controller\ControllerNotFoundException;
