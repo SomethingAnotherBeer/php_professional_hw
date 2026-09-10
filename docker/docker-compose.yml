@@ -27,8 +27,6 @@ services:
       - "9000"
     env_file:
       - .env
-    depends_on:
-      - memcached
     networks:
       - application_network
 
