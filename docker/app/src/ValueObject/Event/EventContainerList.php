@@ -7,21 +7,25 @@ use Iterator;
 class EventContainerList implements Iterator
 {
     /** @var EventContainer[] $event_container_list */
-    private array $event_container_list;
+    private array $event_container_list = [];
 
     private int $position = 0;
+
+    /**
+     * @param EventContainer[] $event_container_list
+     * @return EventContainerList
+     */
+    public static function makeInstance(array $event_container_list)
+    {
+        return new EventContainerList($event_container_list);
+    }
 
     /** 
      * @param EventContainer[] $event_container_list
      */
-    public function __construct(array $event_container_list = [])
+    public function __construct(array $event_container_list)
     {
         $this->event_container_list = $event_container_list;
-        $this->position = 0;
-    }
-
-    public function rewind(): void
-    {
         $this->position = 0;
     }
 
@@ -40,24 +44,19 @@ class EventContainerList implements Iterator
         ++$this->position;
     }
 
+    public function rewind(): void
+    {
+        $this->position = 0;
+    }
+
     public function valid(): bool
     {
-        return isset($this->event_container_list[$this->position]);
+        return (isset($this->event_container_list[$this->position]));
     }
 
-    public function pushEventContainer(EventContainer $eventContainer): static
+    public function asArray(): array
     {
-        $this->event_container_list[] = $eventContainer;
-        
-        return $this;
+        return array_map(fn(EventContainer $eventContainer) => $eventContainer->asArray(), $this->event_container_list);
     }
-
-    public function popEventContainer(): ?EventContainer
-    {   
-        $eventContainer = array_pop($this->event_container_list);
-        
-        return $eventContainer;
-    }
-
 
 }

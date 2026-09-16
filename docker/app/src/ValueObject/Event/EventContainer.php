@@ -2,93 +2,74 @@
 declare(strict_types=1);
 namespace App\ValueObject\Event;
 
+
 class EventContainer
 {
-    private ?string $uid;
-
-    private int $priority;
-
-    private EventConditionList $eventConditionList;
-
-    private Event $event;
+    private ?EventUidValue $eventUidValue;
+    private ?EventPriorityValue $eventPriorityValue;
+    private ?EventConditionList $eventConditionList;
+    private ?EventValue $eventValue;
 
 
-    public function __construct(array $params = [])
+    public function __construct(
+        ?EventUidValue $eventUidValue = null,
+        ?EventPriorityValue $eventPriorityValue = null,
+        ?EventConditionList $eventConditionList = null,
+        ?EventValue $eventValue = null
+    )
     {
-        $this->uid = $params['uid'] ?? null;
-        $this->priority = $params['priority'];
-        $this->eventConditionList = $params['event_condiition_list'];
-        $this->event = $params['event'];
+        $this->eventUidValue = $eventUidValue ?? null;
+        $this->eventPriorityValue = $eventPriorityValue ?? null;
+        $this->eventConditionList = $eventConditionList ?? null;
+        $this->eventValue = $eventValue ?? null;
     }
 
-    public function getUid(): string
+    public function getEventUid(): ?string
     {
-        return $this->uid;
+        return (null !== $this->eventUidValue) ? $this->eventUidValue->getUid() : null;
     }
 
-    public function setUid(string $uid): static
+    public function getEventPriority(): ?int
     {
-        $this->uid = $uid;
-        
-        return $this;
+        return (null !== $this->eventPriorityValue) ? $this->eventPriorityValue->getEventPriority() : null;
     }
 
-    public function getPriority(): int
-    {
-        return $this->priority;
-    }
-
-    public function setPriority(int $priority): static
-    {
-        $this->priority = $priority;
-
-        return $this;
-    }
-
-    public function getEventConditionList(): EventConditionList
+    public function getEventConditionList(): ?EventConditionList
     {
         return $this->eventConditionList;
     }
 
-    public function setEventConditionList(EventConditionList $eventConditionList): static
+    public function getEventValue(): ?EventValue
     {
-        $this->eventConditionList = $eventConditionList;
-
-        return $this;
+        return $this->eventValue;
     }
 
-    public function getEvent(): Event
+    public function asArray(): array
     {
-        return $this->event;
-    }
-
-    public function setEvent(Event $event): static
-    {
-        $this->event = $event;
-
-        return $this;
-    }
-
-    public function asArray(array $include = []): array
-    {
-        $params = 
+        $params =
         [
-            'uid' => fn(): string => $this->uid,
-            'priority' => fn(): int => $this->priority,
-            'event_condition_list' => fn(): array => $this->eventConditionList->asArray(),
-            'event' => fn(): array => $this->event->asArray(),
+            'uid' => (null !== $this->eventUidValue) ? $this->eventUidValue->getUid() : null,
+            'priority' => (null !== $this->eventPriorityValue) ? $this->eventPriorityValue->getEventPriority() : null,
+            'event_condition_list' => (null !== $this->eventConditionList) ? $this->eventConditionList->asArray() : null,
+            'event_value' => (null !== $this->eventValue) ? $this->eventValue->asArray() : null,
         ];
-        $target_params = [];
 
-        foreach ($params as $param_key => $callback) {
-            if (isset($include[$param_key]) && true === $include[$param_key]) {
-                $target_params[$param_key] = $callback();
-            }
-        }
-
-        return $target_params;
-
+        return array_filter($params, fn(mixed $param) => null !== $param);
     }
 
 
+    public static function makeInstance(
+        ?EventUidValue $eventUidValue = null,
+        ?EventPriorityValue $eventPriorityValue = null,
+        ?EventConditionList $eventConditionList = null,
+        ?EventValue $eventValue = null
+    )
+    {   
+        return new EventContainer($eventUidValue, $eventPriorityValue, $eventConditionList, $eventValue);
+    }
+
+
+
+
+    
 }

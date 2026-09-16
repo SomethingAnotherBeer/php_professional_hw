@@ -6,63 +6,64 @@ use Iterator;
 
 class EventConditionList implements Iterator
 {
-    /** @var EventCondition[] $event_condition_list */
-    private array $event_condition_list;
+    private array $event_condition_list = [];
 
-    private int $position = 0;
-
-
-    /** 
-     * @param EventCondition[] $event_condition_list
-     */
     public function __construct(array $event_condition_list)
     {
         $this->event_condition_list = $event_condition_list;
-        $this->position = 0;
     }
 
-    public function rewind(): void
+    public function get(string $key): mixed
     {
-        $this->position = 0;
+        return $this->event_condition_list[$key] ?? null;
     }
 
-    public function current(): EventCondition
+    public function asArray()
     {
-        return $this->event_condition_list[$this->position];
+        return $this->event_condition_list;
+    }
+    
+    public function count(): int
+    {
+        return count($this->event_condition_list);
     }
 
-    public function key(): int
+    public function current(): mixed
     {
-        return $this->position;
+        return current($this->event_condition_list);
+    }
+
+    public function key(): string
+    {
+        return key($this->event_condition_list);
     }
 
     public function next(): void
     {
-        ++$this->position;
+        next($this->event_condition_list);
+    }
+
+    public function rewind(): void
+    {
+        reset($this->event_condition_list);
     }
 
     public function valid(): bool
     {
-        return isset($this->event_condition_list[$this->position]);
+        return key($this->event_condition_list) !== null;
     }
 
-    public function asArray(): array
+    public static function makeInstance(array $event_condition_list): EventConditionList
     {
-        $condition_list_args = array_map(fn(EventCondition $eventCondition) => $eventCondition->asArray(), $this->event_condition_list);
-        $key_value_list_args = [];
+        $prepared_condition_list = [];
 
-        foreach ($condition_list_args as $condition_list_arg_key => $condition_list_arg_value) {
-            $key_value_list_args[$condition_list_arg_key] = $condition_list_arg_value;
+        foreach ($event_condition_list as $key => $value) {
+            if (is_string($key)) {
+                $prepared_condition_list[$key] = $value;
+            }
         }
 
-        return $key_value_list_args;
-
-
-    }
-
-    public function count(): int
-    {
-        return count($this->event_condition_list);
+        return new EventConditionList($prepared_condition_list);
     }
 
 

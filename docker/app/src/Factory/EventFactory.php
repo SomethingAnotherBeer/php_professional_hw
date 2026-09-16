@@ -2,88 +2,131 @@
 declare(strict_types=1);
 namespace App\Factory;
 
-use App\ValueObject\Event\Event;
-use App\ValueObject\Event\EventCondition;
-use App\ValueObject\Event\EventConditionList;
+use App\DTO\EventDTO;
+use App\Entity\Event;
+use App\Exception\Event\EventConditionListNotSpecifiedException;
+use App\Exception\Event\EventPriorityNotSpecifiedException;
+use App\Exception\Event\EventUidNotSpecifiedException;
+use App\Exception\Event\EventValueNotSpecifiedException;
+use App\Exception\Value\ValueMustBeArrayException;
+use App\Exception\Value\ValueMustBeIntegerException;
+use App\Exception\Value\ValueMustBeStringException;
 use App\ValueObject\Event\EventContainer;
-use App\ValueObject\Event\EventContainerList;
+use App\ValueObject\Event\EventPriorityValue;
+use App\ValueObject\Event\EventUidValue;
+use App\ValueObject\Event\EventConditionList;
+use App\ValueObject\Event\EventValue;
 
 class EventFactory
 {
-
-    public function makeEventContainerList(array $params) 
-    {   
-        /** @var EventContainer[] $event_container_list */
-        $event_container_list = [];
-
-        foreach ($params as $event_container_params) {
-            $event_container_list[] = $this->makeEventContainer($event_container_params);
-        }
-
-        return new EventContainerList($event_container_list);
-    }
-
-
-    public function makeEventContainer(array $params): EventContainer
+    public static function makeInstanceFromDTO(EventDTO $eventDTO): Event
     {
-        $eventContainer = new EventContainer();
+        $eventUidValue = null;
+        $eventPriorityValue = null;
+        $eventConditionList = null;
+        $eventValue = null;
 
-        if (isset('uid') && is_string($params['uid'])) {
-            $eventContainer->setUid($params['uid']);
+        if (null === $eventDTO->getUid()) {
+            throw new EventUidNotSpecifiedException("Не указан идентификатор события");
         }
 
-        if (isset($params['priority']) && is_int($params['priority'])) {
-            $eventContainer->setPriority($params['priority']);
+        if (null === $eventDTO->getPriority()) {
+            throw new EventPriorityNotSpecifiedException("Не указан приоритет события");
         }
 
-        if (isset($params['event_condition_list']) && is_array($params['event_condition_list'])) {
-            $eventContainer->setEventConditionList($this->makeEventConditionList($params['event_condition_list']));
+        if (null === $eventDTO->getEventConditionList()) {
+            throw new EventConditionListNotSpecifiedException("Не указан список условий события");
         }
 
-        if (isset($params['event']) && is_array($params['event'])) {
-            $eventContainer->setEvent($this->makeEvent($params['event']));
+        if (null === $eventDTO->getEventValue()) {
+            throw new EventValueNotSpecifiedException("Не указано значение события");
         }
 
-        return $eventContainer;
+        $eventUidValue = EventUidValue::makeInstance($eventDTO->getUid());
+        $eventPriorityValue = EventPriorityValue::makeInstance($eventDTO->getPriority());
+        $eventConditionList = EventConditionList::makeInstance($eventDTO->getEventConditionList()->asArray());
+        $eventValue = EventValue::makeInstance($eventDTO->getEventValue()->asArray());
+
+
+        return Event::makeInstance($eventUidValue, $eventPriorityValue, $eventConditionList, $eventValue);
+
     }
 
-    public function makeEventConditionList(array $params): EventConditionList
+    public static function makeInstanceFromEventContainer(EventContainer $eventContainer): Event
     {
-        /** @var EventCondition[] $event_condition_list */
-        $event_condition_list = [];
-        
-        foreach ($params as $event_condition_params) {
-            $currentEventCondition = $this->makeEventCondition($event_condition_params);
-            if ($currentEventCondition) {
-                $event_condition_list[] = $currentEventCondition;
-            }
+        $event_uid_value = $eventContainer->getEventUid();
+        $event_priority_value = $eventContainer->getEventPriority();
+        $eventConditionList = $eventContainer->getEventConditionList();
+        $eventValue = $eventContainer->getEventValue();
+
+        if (null === $event_uid_value) {
+            throw new EventUidNotSpecifiedException("Не указан идентификатор события");
         }
 
-        return new EventConditionList($event_condition_list);
-
-
-    }
-
-    public function makeEventCondition(array $params): ?EventCondition
-    {
-        $eventCondition = null;
-
-        if (isset($params['key']) && is_string($params['key']) 
-            && isset($params['value'])) {
-
-            $eventCondition = new EventCondition();
-            $eventCondition->setKey($params['key'])->setValue($params['value']);
-
+        if (null === $event_priority_value) {
+            throw new EventPriorityNotSpecifiedException("Не указан приоритет события");
         }
 
-        return $eventCondition;
+        if (null === $eventConditionList) {
+            throw new EventConditionListNotSpecifiedException("Не указан список условий события");
+        }
+
+        if (null === $eventValue) {
+            throw new EventValueNotSpecifiedException("Не указано значение события");
+        }
+
+        $eventUidValue = EventUidValue::makeInstance($event_uid_value);
+        $eventPriorityValue = EventPriorityValue::makeInstance($event_priority_value);
+
+        return Event::makeInstance($eventUidValue, $eventPriorityValue, $eventConditionList, $eventValue);
+
     }
 
-    public function makeEvent(array $params): Event
+    public static function makeInstanceFromSource(array $event_params): Event
     {
-        $params = array_filter($params, fn(int|string $key) => is_string($key), ARRAY_FILTER_USE_KEY);
-        return new Event($params);
+        if (!isset($event_params['uid'])) {
+            throw new EventUidNotSpecifiedException("Не указан идентификатор события");
+        }
+
+        if (!isset($event_params['priority'])) {
+            throw new EventPriorityNotSpecifiedException("Не указан приоритет события");
+        }
+
+        if (!isset($event_params['event_condition_list'])) {
+            throw new EventConditionListNotSpecifiedException("Не указан список условий события");
+        }
+
+        if (!isset($event_params['event_value'])) {
+            throw new EventValueNotSpecifiedException("Не указано значение события");
+        }
+
+        if (!is_string($event_params['uid'])) {
+            throw new ValueMustBeStringException("Значение идентификатора события должно быть строкой");
+        }
+
+        if (!is_int($event_params['priority'])) {
+            throw new ValueMustBeIntegerException("Значение приоритета события должно быть целым числом");
+        }
+
+        if (!is_array($event_params['event_condition_list'])) {
+            throw new ValueMustBeArrayException("Значение списка условий возникновения события должно быть массивом");
+        }
+
+        if (!is_array($event_params['event_value'])) {
+            throw new ValueMustBeArrayException("Значение параметров события должно быть массивом");
+        }
+
+        $eventUidValue = EventUidValue::makeInstance($event_params['uid']);
+        $eventPriorityValue = EventPriorityValue::makeInstance($event_params['priority']);
+        $eventConditionList = EventConditionList::makeInstance($event_params['event_condition_list']);
+        $eventValue = EventValue::makeInstance($event_params['event_value']);
+
+        return Event::makeInstance($eventUidValue, $eventPriorityValue, $eventConditionList, $eventValue);
+
+
     }
+
+
 
 
 }

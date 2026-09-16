@@ -2,22 +2,30 @@
 declare(strict_types=1);
 namespace App\Repository\Event;
 
+use App\Entity\Event;
 use App\ValueObject\Event\EventConditionList;
-use App\ValueObject\Event\EventContainer;
-use App\ValueObject\Event\EventContainerList;
-use App\ValueObject\Query\EventQuery;
 
 interface EventRepositoryInterface
-{
-    public function getEventsByConditionList(EventConditionList $eventConditionList): EventContainerList;
+{   
+    /**
+     * @param EventConditionList $eventConditionList
+     * @return Event[]
+     */
+    public function getEventsByConditionList(EventConditionList $eventConditionList): array;
 
-    public function getEventByUid(string $uid): EventContainer;
+    public function getEvent(string $uid): Event;
+    
+    public function getEventOrNull(string $uid): ?Event;
 
-    public function clearEvents(): EventContainerList;
+    /**
+     * @return Event[]
+     */
+    public function clearEvents(): array;
 
-    public function createEvent(EventContainer $eventContainer): EventContainer;
+    public function flushEvent(Event $event): Event;
 
-    public function changeEvent(EventContainer $eventContainer): EventContainer;
+    public function removeEvent(Event $event): Event;
+    
 
     
 }
