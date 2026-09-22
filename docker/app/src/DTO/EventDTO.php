@@ -10,7 +10,7 @@ class EventDTO
 
     private ?EventConditionListDTO $eventConditionListDTO = null;
 
-    private ?EventValueDTO $eventValueDTO = null;
+    private ?EventValueListDTO $eventValueListDTO = null;
 
 
     public function getUid(): ?string
@@ -49,14 +49,14 @@ class EventDTO
         return $this;
     }
 
-    public function getEventValue(): EventValueDTO
+    public function getEventValueList(): EventValueListDTO
     {
-        return $this->eventValueDTO;
+        return $this->eventValueListDTO;
     }
 
-    public function setEventValue(EventValueDTO $eventValueDTO): static
+    public function setEventValueList(EventValueListDTO $eventValueListDTO): static
     {
-        $this->eventValueDTO = $eventValueDTO;
+        $this->eventValueListDTO = $eventValueListDTO;
 
         return $this;
     }
@@ -77,8 +77,8 @@ class EventDTO
             $eventDTO->setEventConditionList(EventConditionListDTO::makeInstance($params['event_condition_list']));
         }
 
-        if (isset($params['event_value']) && is_array($params['event_value'])) {
-            $eventDTO->setEventValue(EventValueDTO::makeInstance($params['event_value']));
+        if (isset($params['event_value_list']) && is_array($params['event_value_list'])) {
+            $eventDTO->setEventValueList(EventValueListDTO::makeInstance($params['event_value_list']));
         }
 
         return $eventDTO;

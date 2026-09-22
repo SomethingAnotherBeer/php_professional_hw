@@ -29,15 +29,7 @@ class EventConditionListDTO
 
     public static function makeInstance(array $event_condition_list): EventConditionListDTO
     {
-        $eventConditionListDTO = new EventConditionListDTO();
-        
-        foreach ($event_condition_list as $key => $value) {
-            if (is_string($key)) {
-                $eventConditionListDTO->set($key, $value);
-            }
-        }
-
-        return $eventConditionListDTO;
+        return new EventConditionListDTO($event_condition_list);
     }
 
 

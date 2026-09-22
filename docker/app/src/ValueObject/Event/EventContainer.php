@@ -8,20 +8,20 @@ class EventContainer
     private ?EventUidValue $eventUidValue;
     private ?EventPriorityValue $eventPriorityValue;
     private ?EventConditionList $eventConditionList;
-    private ?EventValue $eventValue;
+    private ?EventValueList $eventValueList;
 
 
     public function __construct(
         ?EventUidValue $eventUidValue = null,
         ?EventPriorityValue $eventPriorityValue = null,
         ?EventConditionList $eventConditionList = null,
-        ?EventValue $eventValue = null
+        ?EventValueList $eventValueList = null
     )
     {
         $this->eventUidValue = $eventUidValue ?? null;
         $this->eventPriorityValue = $eventPriorityValue ?? null;
         $this->eventConditionList = $eventConditionList ?? null;
-        $this->eventValue = $eventValue ?? null;
+        $this->eventValueList = $eventValueList ?? null;
     }
 
     public function getEventUid(): ?string
@@ -39,9 +39,9 @@ class EventContainer
         return $this->eventConditionList;
     }
 
-    public function getEventValue(): ?EventValue
+    public function getEventValue(): ?EventValueList
     {
-        return $this->eventValue;
+        return $this->eventValueList;
     }
 
     public function asArray(): array
@@ -51,7 +51,7 @@ class EventContainer
             'uid' => (null !== $this->eventUidValue) ? $this->eventUidValue->getUid() : null,
             'priority' => (null !== $this->eventPriorityValue) ? $this->eventPriorityValue->getEventPriority() : null,
             'event_condition_list' => (null !== $this->eventConditionList) ? $this->eventConditionList->asArray() : null,
-            'event_value' => (null !== $this->eventValue) ? $this->eventValue->asArray() : null,
+            'event_value_list' => (null !== $this->eventValueList) ? $this->eventValueList->asArray() : null,
         ];
 
         return array_filter($params, fn(mixed $param) => null !== $param);
@@ -62,7 +62,7 @@ class EventContainer
         ?EventUidValue $eventUidValue = null,
         ?EventPriorityValue $eventPriorityValue = null,
         ?EventConditionList $eventConditionList = null,
-        ?EventValue $eventValue = null
+        ?EventValueList $eventValue = null
     )
     {   
         return new EventContainer($eventUidValue, $eventPriorityValue, $eventConditionList, $eventValue);

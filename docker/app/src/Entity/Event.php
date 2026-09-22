@@ -6,7 +6,7 @@ namespace App\Entity;
 use App\ValueObject\Event\EventConditionList;
 use App\ValueObject\Event\EventPriorityValue;
 use App\ValueObject\Event\EventUidValue;
-use App\ValueObject\Event\EventValue;
+use App\ValueObject\Event\EventValueList;
 
 class Event
 {
@@ -16,20 +16,20 @@ class Event
 
     private EventConditionList $eventConditionList;
 
-    private EventValue $eventValue;
+    private EventValueList $eventValueList;
 
     public function __construct
     (
         EventUidValue $eventUidValue,
         EventPriorityValue $eventPriorityValue,
         EventConditionList $eventConditionList,
-        EventValue $eventValue
+        EventValueList $eventValueList
     )
     {
         $this->eventUidValue = $eventUidValue;
         $this->eventPriorityValue = $eventPriorityValue;
         $this->eventConditionList = $eventConditionList;
-        $this->eventValue = $eventValue;
+        $this->eventValueList = $eventValueList;
     }
 
     public function asArray(): array
@@ -39,7 +39,7 @@ class Event
             'uid' => $this->eventUidValue->getUid(),
             'priority' => $this->eventPriorityValue->getEventPriority(),
             'event_condition_list' => $this->eventConditionList->asArray(),
-            'event_value' => $this->eventValue->asArray(),
+            'event_value_list' => $this->eventValueList->asArray(),
         ];   
     }
 
@@ -80,14 +80,14 @@ class Event
         return $this;
     }
 
-    public function getEventValue(): EventValue
+    public function getEventValueList(): EventValueList
     {
-        return $this->eventValue;
+        return $this->eventValueList;
     }
 
-    public function setEventValue(EventValue $eventValue): static
+    public function setEventValue(EventValueList $eventValueList): static
     {
-        $this->eventValue = $eventValue;
+        $this->eventValueList = $eventValueList;
         return $this;
     }
 
@@ -95,10 +95,10 @@ class Event
         EventUidValue $eventUidValue,
         EventPriorityValue $eventPriorityValue,
         EventConditionList $eventConditionList,
-        EventValue $eventValue
+        EventValueList $eventValueList
     ): Event
     {
-        return new Event($eventUidValue, $eventPriorityValue, $eventConditionList, $eventValue);
+        return new Event($eventUidValue, $eventPriorityValue, $eventConditionList, $eventValueList);
     }
 
 

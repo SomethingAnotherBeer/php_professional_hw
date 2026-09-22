@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace App\DTO;
 
 
-class EventValueDTO
+class EventValueListDTO
 {
     private array $event_value_params = [];
 
@@ -34,20 +34,9 @@ class EventValueDTO
         return $this->event_value_params;
     }
 
-    public static function makeInstance(array $event_value_params): EventValueDTO
+    public static function makeInstance(array $event_value_params): EventValueListDTO
     {
-        $eventValueDTO = new EventValueDTO();
-
-        foreach ($event_value_params as $key => $value) {
-            if (is_int($key)) {
-                $eventValueDTO->set((string)$key, $value);
-            }
-            else {
-                $eventValueDTO->set($key, $value);
-            }
-        }
-
-        return $eventValueDTO;
+        return new EventValueListDTO($event_value_params);
     }
 
 }

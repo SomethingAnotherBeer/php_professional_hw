@@ -2,69 +2,62 @@
 declare(strict_types=1);
 namespace App\ValueObject\Event;
 
-use Iterator;
 
-class EventConditionList implements Iterator
+class EventConditionList
 {
-    private array $event_condition_list = [];
+    private IntegerEventConditionList $integerEventConditionList;
+    private BooleanEventConditionList $booleanEventConditionList;
+    private StringEventConditionList $stringEventConditionList;
 
-    public function __construct(array $event_condition_list)
+    public static function makeInstance(): EventConditionList
     {
-        $this->event_condition_list = $event_condition_list;
+        return new EventConditionList();
     }
 
-    public function get(string $key): mixed
+
+    public function setIntegerEventConditionList(IntegerEventConditionList $integerEventConditionList): static
     {
-        return $this->event_condition_list[$key] ?? null;
+        $this->integerEventConditionList = $integerEventConditionList;
+        return $this;
     }
 
-    public function asArray()
+    public function getIntegerEventConditionList(): IntegerEventConditionList
     {
-        return $this->event_condition_list;
-    }
-    
-    public function count(): int
-    {
-        return count($this->event_condition_list);
+        return $this->integerEventConditionList;
     }
 
-    public function current(): mixed
+    public function setBooleanEventConditionList(BooleanEventConditionList $booleanEventConditionList): static
     {
-        return current($this->event_condition_list);
+        $this->booleanEventConditionList = $booleanEventConditionList;
+        return $this;
     }
 
-    public function key(): string
+    public function getBooleanEventConditionList(): BooleanEventConditionList
     {
-        return key($this->event_condition_list);
+        return $this->booleanEventConditionList;
     }
 
-    public function next(): void
+    public function setStringEventConditionList(StringEventConditionList $stringEventConditionList): static
     {
-        next($this->event_condition_list);
+        $this->stringEventConditionList = $stringEventConditionList;
+
+        return $this;
     }
 
-    public function rewind(): void
+    public function getStringEventConditionList(): StringEventConditionList
     {
-        reset($this->event_condition_list);
+        return $this->stringEventConditionList;
     }
 
-    public function valid(): bool
+    public function asArray(): array
     {
-        return key($this->event_condition_list) !== null;
+        $integer_event_condition_params = $this->integerEventConditionList->asArray();
+        $boolean_event_condition_params = $this->booleanEventConditionList->asArray();
+        $string_event_condition_params = $this->stringEventConditionList->asArray();
+
+        return array_merge($integer_event_condition_params, $boolean_event_condition_params, $string_event_condition_params);
     }
 
-    public static function makeInstance(array $event_condition_list): EventConditionList
-    {
-        $prepared_condition_list = [];
-
-        foreach ($event_condition_list as $key => $value) {
-            if (is_string($key)) {
-                $prepared_condition_list[$key] = $value;
-            }
-        }
-
-        return new EventConditionList($prepared_condition_list);
-    }
 
 
 }
