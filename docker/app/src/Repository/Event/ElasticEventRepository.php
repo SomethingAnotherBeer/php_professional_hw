@@ -113,7 +113,8 @@ class ElasticEventRepository
 
     public function clearEvents()
     {
-        
+        $query = ['query' => []];
+        $response = $this->elasticClient->deleteByQuery($query);
     }
 
     private function getEventOrNull(string $uid): ?Event
