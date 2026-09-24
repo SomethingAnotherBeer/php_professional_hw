@@ -51,6 +51,14 @@ class IntegerEventConditionList implements Iterator
         return isset($this->integer_event_condition_list[$this->position]);
     }
 
+    /**
+     * @return IntegerEventConditionValue[]
+     */
+    public function all(): array
+    {
+        return $this->integer_event_condition_list;
+    }
+
     public function asArray(): array
     {
         $params = [];

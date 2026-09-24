@@ -51,6 +51,14 @@ class StringEventConditionList implements Iterator
         return isset($this->string_event_condition_list[$this->position]);
     }
 
+    /**
+     * @return StringEventConditionValue[]
+     */
+    public function all(): array
+    {
+        return $this->string_event_condition_list;
+    }
+
     public function asArray(): array
     {
         $params = [];

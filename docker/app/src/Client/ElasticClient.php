@@ -49,6 +49,53 @@ class ElasticClient
     }
 
 
+    public function get(string $id): Elasticsearch
+    {
+        $params =
+        [
+            'index' => $this->index,
+            'id' => $id,
+        ];
+
+        return $this->elasticConnection->get($params);
+    }
+
+    public function index(string $id, array $params): Elasticsearch
+    {
+        $query =
+        [
+            'index' => $this->index,
+            'id' => $id,
+            'body' => $params,
+        ];
+        $response = $this->elasticConnection->index($query);
+        return $response;
+    }
+
+    public function delete(string $id): Elasticsearch
+    {
+        $query =
+        [
+            'index' => $this->index,
+            'id' => $id,
+        ];
+        $response = $this->elasticConnection->delete($query);
+
+        return $response;
+    }
+
+    public function deleteByQuery(array $query): Elasticsearch
+    {
+        $params =
+        [
+            'index' => $this->index,
+            'body' => $query,
+        ];
+
+        $response = $this->elasticConnection->deleteByQuery($params);
+
+        return $response;
+    }   
 
 
 }

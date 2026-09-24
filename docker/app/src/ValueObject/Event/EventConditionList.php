@@ -49,6 +49,14 @@ class EventConditionList
         return $this->stringEventConditionList;
     }
 
+    /**
+     * @return EventConditionValueInterface[]
+     */
+    public function all(): array
+    {
+        return array_merge($this->integerEventConditionList->all(), $this->booleanEventConditionList->all(), $this->stringEventConditionList->all());
+    }
+
     public function asArray(): array
     {
         $integer_event_condition_params = $this->integerEventConditionList->asArray();

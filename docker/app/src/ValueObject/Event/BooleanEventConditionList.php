@@ -51,6 +51,14 @@ class BooleanEventConditionList implements Iterator
         return isset($this->boolean_event_condition_list[$this->position]);
     }
 
+    /**
+     * @return BooleanEventConditionValue[]
+     */
+    public function all(): array
+    {
+        return $this->boolean_event_condition_list;
+    }
+
     public function asArray()
     {
         $params = [];

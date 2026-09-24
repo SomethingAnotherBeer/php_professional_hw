@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace App\ValueObject\Event;
 
-class StringEventConditionValue
+class StringEventConditionValue implements EventConditionValueInterface
 {
     private string $key;
 

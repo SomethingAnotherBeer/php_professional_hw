@@ -85,7 +85,7 @@ class Event
         return $this->eventValueList;
     }
 
-    public function setEventValue(EventValueList $eventValueList): static
+    public function setEventValueList(EventValueList $eventValueList): static
     {
         $this->eventValueList = $eventValueList;
         return $this;

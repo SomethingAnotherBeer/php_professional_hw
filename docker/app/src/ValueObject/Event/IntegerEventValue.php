@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace App\ValueObject\Event;
 
-class IntegerEventValue
+class IntegerEventValue implements EventValueInterface
 {
     private string $key;
 

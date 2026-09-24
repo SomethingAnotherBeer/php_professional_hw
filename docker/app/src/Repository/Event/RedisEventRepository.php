@@ -8,6 +8,7 @@ use App\Exception\Event\EventInChangeProcessException;
 use App\Exception\Event\EventNotFoundException;
 use App\Entity\Event;
 use App\Factory\EventFactory;
+use App\Mapper\Event\RedisEventMapper;
 use App\ValueObject\Event\EventConditionList;
 
 class RedisEventRepository implements EventRepositoryInterface
@@ -19,10 +20,12 @@ class RedisEventRepository implements EventRepositoryInterface
     public const READ_OFFSET = 100;
 
     private RedisClient $redisClient;
+    private RedisEventMapper $eventMapper;
 
-    public function __construct(RedisClient $redisClient)
+    public function __construct(RedisClient $redisClient, RedisEventMapper $eventMapper)
     {
         $this->redisClient = $redisClient;
+        $this->eventMapper = $eventMapper;
     }
 
     public function getEventsByConditionList(EventConditionList $eventConditionList): array
@@ -79,8 +82,7 @@ class RedisEventRepository implements EventRepositoryInterface
     public function flushEvent(Event $event): Event
     {
 
-        $event_params = $event->asArray();
-
+        $event_params = $this->eventMapper->makeSourceFromEntity($event);
         $event_params = json_encode($event_params, JSON_UNESCAPED_UNICODE);
 
         $this->redisClient->getConnection()->set(static::EVENT_KEY . $event->getEventUid(), $event_params);
@@ -112,11 +114,7 @@ class RedisEventRepository implements EventRepositoryInterface
 
         while (($current_event_keys = $connection->scan($offset, static::EVENT_KEY)) !== null) {
             foreach ($current_event_keys as $current_event_key) {
-                $current_event_params = $connection->get(static::EVENT_KEY . $current_event_key);
-                $current_event_params = json_decode($current_event_params);
-
-                $current_event_params_list[] = EventFactory::makeInstanceFromSource($current_event_params);
-            
+                $current_event_params_list[] = $this->getEventOrNull($current_event_key);            
                 $connection->del(static::EVENT_KEY . $current_event_key);
 
             }
@@ -133,7 +131,7 @@ class RedisEventRepository implements EventRepositoryInterface
     public function getEventOrNull(string $uid): ?Event
     {
         $event_params = $this->redisClient->getConnection()->get(static::EVENT_KEY . $uid);
-        $event = $event_params ? EventFactory::makeInstanceFromSource($event_params) : null;
+        $event = $event_params ? $this->eventMapper->makeEntityFromSource($event_params) : null;
 
         return $event;
     }

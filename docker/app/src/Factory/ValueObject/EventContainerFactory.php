@@ -5,6 +5,7 @@ namespace App\Factory\ValueObject;
 use App\DTO\EventDTO;
 use App\Entity\Event;
 use App\ValueObject\Event\EventContainer;
+use App\ValueObject\Event\EventContainerList;
 use App\ValueObject\Event\EventPriorityValue;
 use App\ValueObject\Event\EventUidValue;
 
@@ -54,6 +55,15 @@ class EventContainerFactory
         $eventValueList = $event->getEventValueList();
 
         return EventContainer::makeInstance($eventUidValue, $eventPriorityValue, $eventConditionList, $eventValueList);
-    }       
+    }
+    
+    /** @param Event[] $event_list */
+    public function makeEventContainerListFromEntityList(array $event_list): EventContainerList
+    {   
+        /** @var EventContainer[] $event_container_list */
+        $event_container_list = array_map(fn(Event $event) => $this->makeEventContainerFromEntity($event), $event_list);
+        return EventContainerList::makeInstance($event_container_list);
+    }
+
 
 }

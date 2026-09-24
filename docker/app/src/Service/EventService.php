@@ -9,8 +9,10 @@ use App\Exception\Event\EventConditionListNotSpecifiedException;
 use App\Exception\Event\EventNotFoundException;
 use App\Exception\Event\EventPriorityNotSpecifiedException;
 use App\Exception\Event\EventUidNotSpecifiedException;
-use App\Exception\Event\EventValueNotSpecifiedException;
-use App\Factory\EventContainerFactory;
+use App\Exception\Event\EventValueListNotSpecifiedException;
+use App\Factory\ValueObject\EventConditionListFactory;
+use App\Factory\ValueObject\EventContainerFactory;
+use App\Factory\ValueObject\EventValueListFactory;
 use App\Repository\Event\EventRepositoryInterface;
 use App\ValueObject\Event\EventConditionList;
 use App\ValueObject\Event\EventContainer;
@@ -22,10 +24,22 @@ use App\ValueObject\Event\EventValue;
 class EventService
 {
     protected EventRepositoryInterface $eventRepository;
+    protected EventContainerFactory $eventContainerFactory;
+    protected EventConditionListFactory $eventConditionListFactory;
+    protected EventValueListFactory $eventValueListFactory;
 
-    public function __construct(EventRepositoryInterface $eventRepository)
+    public function __construct(
+        EventRepositoryInterface $eventRepository, 
+        EventContainerFactory $eventContainerFactory,
+        EventConditionListFactory $eventConditionListFactory,
+        EventValueListFactory $eventValueListFactory
+        
+        )
     {
         $this->eventRepository = $eventRepository;
+        $this->eventContainerFactory = $eventContainerFactory;
+        $this->eventConditionListFactory = $eventConditionListFactory;
+        $this->eventValueListFactory = $eventValueListFactory;
     }
 
     public function getEvent(EventDTO $eventDTO): EventContainer
@@ -35,7 +49,7 @@ class EventService
         }
         $event = $this->getEventByUidWithThrow($eventDTO->getUid());
 
-        return EventContainerFactory::makeInstanceFromEntity($event);
+        return $this->eventContainerFactory->makeEventContainerFromEntity($event);
     }
 
     public function getEventsByEventConditionList(EventConditionListDTO $eventConditionListDTO): EventContainerList
@@ -43,12 +57,12 @@ class EventService
         if (count($eventConditionListDTO->asArray()) === 0) {
             throw new EventConditionListNotSpecifiedException("Список условий события не может быть пустым");
         }
-        $eventConditionList = EventConditionList::makeInstance($eventConditionListDTO->asArray());
+        $eventConditionList = $this->eventConditionListFactory->makeEventConditionList($eventConditionListDTO->asArray());
 
         /** @var Event[] $event_condition_list */
         $event_list = $this->eventRepository->getEventsByConditionList($eventConditionList);
         
-        return EventContainerFactory::makeInstanceListFromEntityList($event_list);
+        return $this->eventContainerFactory->makeEventContainerListFromEntityList($event_list);
 
 
     }
@@ -63,8 +77,8 @@ class EventService
             throw new EventConditionListNotSpecifiedException("Не указан список условий события");
         }
 
-        if (null === $eventDTO->getEventValue() || count($eventDTO->getEventValue()->asArray()) === 0) {
-            throw new EventValueNotSpecifiedException("Параметры события не указаны");
+        if (null === $eventDTO->getEventValueList() || count($eventDTO->getEventValueList()->asArray()) === 0) {
+            throw new EventValueListNotSpecifiedException("Параметры события не указаны");
         }
 
         $event_uid = $eventDTO->getUid() ?? $this->generateEventUid();
@@ -72,13 +86,13 @@ class EventService
 
         $eventUidValue = EventUidValue::makeInstance($event_uid);
         $eventPriorityValue = EventPriorityValue::makeInstance($eventDTO->getPriority());
-        $eventConditionList = EventConditionList::makeInstance($eventDTO->getEventConditionList()->asArray());
-        $eventValue = EventValue::makeInstance($eventDTO->getEventValue()->asArray());
+        $eventConditionList = $this->eventConditionListFactory->makeEventConditionList($eventDTO->getEventConditionList()->asArray());
+        $eventValueList = $this->eventValueListFactory->makeEventValueList($eventDTO->getEventValueList()->asArray());
 
-        $event = Event::makeInstance($eventUidValue, $eventPriorityValue, $eventConditionList, $eventValue);
+        $event = Event::makeInstance($eventUidValue, $eventPriorityValue, $eventConditionList, $eventValueList);
         $event = $this->eventRepository->flushEvent($event);
 
-        return EventContainerFactory::makeInstanceFromEntity($event);
+        return $this->eventContainerFactory->makeEventContainerFromEntity($event);
     }
 
     public function changeEvent(EventDTO $eventDTO): EventContainer
@@ -88,7 +102,7 @@ class EventService
         }
         $event = $this->eventRepository->getEvent($eventDTO->getUid());
 
-        $currentEventContainer = EventContainerFactory::makeInstanceFromDTO($eventDTO);
+        $currentEventContainer = $this->eventContainerFactory->makeEventContainerFromDTO($eventDTO);
 
         if (null !== $currentEventContainer->getEventPriority() 
             && $currentEventContainer->getEventPriority() !== $event->getEventPriority()) {
@@ -99,18 +113,20 @@ class EventService
         if (null !== $currentEventContainer->getEventConditionList() 
             && $currentEventContainer->getEventConditionList()->asArray() !== $event->getEventConditionList()->asArray()) {
         
-            $event->setEventConditionList(EventConditionList::makeInstance($eventDTO->getEventConditionList()->asArray()));
+            $eventConditionList = $this->eventConditionListFactory->makeEventConditionList($eventDTO->getEventConditionList()->asArray());
+            $event->setEventConditionList($eventConditionList);
         }
 
-        if (null !== $currentEventContainer->getEventValue()
-            && $currentEventContainer->getEventValue()->asArray() !== $event->getEventValue()->asArray()) {
-            
-            $event->setEventValue(EventValue::makeInstance($eventDTO->getEventValue()->asArray()));
+        if (null !== $currentEventContainer->getEventValueList()
+            && $currentEventContainer->getEventValueList()->asArray() !== $event->getEventValueList()->asArray()) {
+
+            $eventValueList = $this->eventValueListFactory->makeEventValueList($eventDTO->getEventValueList()->asArray());
+            $event->setEventValueList($eventValueList);
         }
 
         $event = $this->eventRepository->flushEvent($event);
 
-        return EventContainerFactory::makeInstanceFromEntity($event);
+        return $this->eventContainerFactory->makeEventContainerFromEntity($event);
 
 
     }
@@ -124,7 +140,7 @@ class EventService
         $event = $this->eventRepository->getEvent($eventDTO->getUid());
         $event = $this->eventRepository->removeEvent($event);
         
-        return EventContainerFactory::makeInstanceFromEntity($event);
+        return $this->eventContainerFactory->makeEventContainerFromEntity($event);
     }
 
     public function getEventsByConditionList(EventConditionListDTO $eventConditionListDTO): EventContainerList
@@ -133,11 +149,11 @@ class EventService
             throw new EventConditionListNotSpecifiedException("Не указан список условий события");
         }
 
-        $eventConditionList = EventConditionList::makeInstance($eventConditionListDTO->asArray());
+        $eventConditionList = $this->eventConditionListFactory->makeEventConditionList($eventConditionListDTO->asArray());
         /** @var Event[] $event_list */
         $event_list = $this->eventRepository->getEventsByConditionList($eventConditionList);
 
-        return EventContainerFactory::makeInstanceListFromEntityList($event_list);
+        return $this->eventContainerFactory->makeEventContainerListFromEntityList($event_list);
     }
 
     public function clearEvents(): EventContainerList
@@ -145,7 +161,7 @@ class EventService
         /** @var Event[] $event_list */
         $event_list = $this->eventRepository->clearEvents();
 
-        return EventContainerFactory::makeInstanceListFromEntityList($event_list);
+        return $this->eventContainerFactory->makeEventContainerListFromEntityList($event_list);
 
     }
 

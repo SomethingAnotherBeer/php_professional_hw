@@ -39,7 +39,7 @@ class EventContainer
         return $this->eventConditionList;
     }
 
-    public function getEventValue(): ?EventValueList
+    public function getEventValueList(): ?EventValueList
     {
         return $this->eventValueList;
     }

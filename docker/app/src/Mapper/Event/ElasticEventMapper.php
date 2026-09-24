@@ -4,14 +4,16 @@ namespace App\Mapper\Event;
 use App\Entity\Event;
 use App\Factory\ValueObject\EventConditionListFactory;
 use App\Factory\ValueObject\EventValueListFactory;
-use App\Exception\Event\EventUidNotSpecifiedException;
-use App\Exception\Event\EventPriorityNotSpecifiedException;
-use App\Exception\Event\EventConditionListNotSpecifiedException;
-use App\Exception\Event\EventValueListNotSpecifiedException;
-use App\Exception\Value\UndefinedValueException;
-use App\Exception\Value\ValueMustBeStringException;
-use App\Exception\Value\ValueMustBeIntegerException;
-use App\Exception\Value\ValueMustBeArrayException;
+use App\ValueObject\Event\BooleanEventConditionValue;
+use App\ValueObject\Event\BooleanEventValue;
+use App\ValueObject\Event\EventConditionValueInterface;
+use App\ValueObject\Event\EventPriorityValue;
+use App\ValueObject\Event\EventUidValue;
+use App\ValueObject\Event\EventValueInterface;
+use App\ValueObject\Event\IntegerEventConditionValue;
+use App\ValueObject\Event\IntegerEventValue;
+use App\ValueObject\Event\StringEventConditionValue;
+use App\ValueObject\Event\StringEventValue;
 
 class ElasticEventMapper
 {
@@ -24,146 +26,142 @@ class ElasticEventMapper
         $this->eventValueListFactory = $eventValueListFactory;
     }
 
-    public function makeSourceFromEntity(Event $event)
+    public function makeSourceFromEntity(Event $event): array
     {
+        $prepared_event_condition_list = [];
+        $prepared_event_value_list = [];
 
-    }
-
-    public function makeEntityFromSource(array $params)
-    {
-        $prepared_params = [];
-
-         if (!isset($params['uid'])) {
-            throw new EventUidNotSpecifiedException("Отсутствует идентификатор события");
+        foreach ($event->getEventConditionList() as $eventCondition) {
+            $prepared_event_condition_list[] = $this->prepareEventConditionValueToSource($eventCondition);
+        }
+        foreach ($event->getEventValueList() as $eventValue) {
+            $prepared_event_value_list[] = $this->prepareEventValueToSource($eventValue);
         }
 
-        if (!isset($params['priority'])) {
-            throw new EventPriorityNotSpecifiedException("Отсутствует приоритет события");
-        }
-
-        if (!isset($params['event_condition_list'])) {
-            throw new EventConditionListNotSpecifiedException("Отсутствует списко условий события");
-        }
-
-        if (!isset($params['event_value_list'])) {
-            throw new EventValueListNotSpecifiedException("Отсутствует список параметров события");
-        }
-
-        if (!is_string($params['uid'])) {
-            throw new ValueMustBeStringException("Идентификатор события не является строковым значением");
-        }
-
-        if (!is_int($params['priority'])) {
-            throw new ValueMustBeIntegerException("Приоритет события не является целым числом");
-        }
-
-        if (!is_array($params['event_condition_list'])) {
-            throw new ValueMustBeArrayException("Список условий события не является массивом");
-        }
-
-        if (!is_array($params['event_value_list'])) {
-            throw new ValueMustBeArrayException("Список параметров события не является массивом");
-        }
-
-        $this->checkEventConditionParamsListIsNotArray($params['event_condition_list']);
-        $this->checkEventValueParamsListIsNotArray($params['event_value_list']);
-        $this->checkEventConditionParamsListIsUndefined($params['event_condition_lis']);
-        $this->checkEventValueParamsListIsUndefined($params['event_value_list']);
-
-
-
-    }
-
-
-        
-
-
-
-    private function checkEventConditionParamsListIsNotArray(array $event_condition_params_list): void
-    {
-        $is_not_array_event_condition_params_list = array_filter($event_condition_params_list, fn(mixed $value) => !is_array($value));
-        if (count($is_not_array_event_condition_params_list) > 0) {
-            $is_not_array_event_condition_params_list_msg = implode("\n", $is_not_array_event_condition_params_list);
-            throw new ValueMustBeArrayException("Следующие значения списка условий события не являются массивом: {$is_not_array_event_condition_params_list_msg}");
-        }
-    }
-
-    private function checkEventValueParamsListIsNotArray(array $event_value_params_list): void
-    {
-        $is_not_array_event_value_params_list = array_filter($event_value_params_list, fn(mixed $value) => !is_array($value));
-        if (count($is_not_array_event_value_params_list) > 0) {
-            $is_not_array_event_value_params_list_msg = implode("\n", $is_not_array_event_value_params_list);
-            throw new ValueMustBeArrayException("Следующие значения списка параметров события не являются массивом: {$is_not_array_event_value_params_list_msg}");
-        }
-    }
-
-    private function checkEventConditionParamsListIsUndefined(array $event_condition_params_list): void
-    {
-        $undefined_event_condition_params_list = array_filter($event_condition_params_list, fn(array $value) => 
-        !isset($value['key']) || !isset($value['value']) || !isset($value['type']));
-        if (count($undefined_event_condition_params_list) > 0) {
-            $prepared_undefined_event_condition_params_list = [];
-            foreach ($undefined_event_condition_params_list as $undefined_param) {
-                $keys = array_keys($undefined_param);
-                $current = [];
-                foreach ($keys as $key) {
-                    $current[] = "$key => {$undefined_event_condition_params_list[$key]}";
-                }
-                $prepared_undefined_event_condition_params_list[] = implode("\n", $current);
-
-                $message = implode("\n\n", $prepared_undefined_event_condition_params_list);
-                throw new UndefinedValueException("Значение условия события должно иметь ключи key, value, type. Обнаружены следующие значения: $message");
-
-            }
-            
-        }
-    }
-
-    private function checkEventValueParamsListIsUndefined(array $event_value_params_list): void
-    {
-        $undefined_event_value_params_list = array_filter($event_value_params_list, fn(mixed $value) => 
-        !isset($value['key']) || !isset($value['value']) || !isset($value['type']));
-        if (count($undefined_event_value_params_list) > 0) {
-            $prepared_undefined_event_value_params_list = [];
-            foreach ($undefined_event_value_params_list as $undefined_param) {
-                $keys = array_keys($undefined_param);
-                $current = [];
-                foreach ($keys as $key) {
-                    $current[] = "$key => {$undefined_event_value_params_list[$key]}";
-                }
-                $prepared_undefined_event_value_params_list[] = implode("\n", $current);
-                $message = implode("\n\n", $prepared_undefined_event_value_params_list);
-                throw new UndefinedValueException("Значение параметра события должно иметь ключи key, value, type. Обнаружены следующие значения: $message");
-            }
-        }
-    }
-
-    private function checkEventConditionListOnUntyped(array $event_condition_params_list): void
-    {   
-        $errors = [];
-        $checks =
+        $data =
         [
-            'key' => 
-            [
-                'check' => fn(mixed $value) => is_string($value),
-                'message' => 'Параметр key не является строковым',
-            ],
-            'value' =>
-            [
-                'check' => fn(mixed $value) => is_string($value),
-                'message' => 'Параметр value не является строковым',
-            ],
-            'type' => 
-            [
-                'check' => fn(mixed $value) => is_string($value),
-                'message' => 'Параметр type не является строковым',
-            ],
+            'uid' => $event->getEventUid(),
+            'priority' => $event->getEventPriority(),
+            'event_condition_list' => $prepared_event_condition_list,
+            'event_value_list' => $prepared_event_value_list  
         ];
 
+        return $data;
+
+    }   
+
+    public function makeEntityFromSource(array $params): Event
+    {
+        $prepared_params = 
+        [
+            'uid' => $params['uid'],
+            'priority' => $params['priority'],
+        ];
         
+        $prepared_params['event_condition_list'] = [];
+        $prepared_params['event_value_list'] = [];
+
+        foreach ($params['event_condition_list'] as $event_condition_params) {
+            $prepared_params['event_condition_list'][$event_condition_params['key']] = $this->prepareEventValueFromSource($event_condition_params['value'], $event_condition_params['type']);
+        }
+        foreach ($params['event_value_list'] as $event_value_params) {
+            $prepared_params['event_value_list'][$event_value_params['key']] = $this->prepareEventValueFromSource($event_value_params['value'], $event_value_params['type']);
+        }
+
+        $eventUidValue = EventUidValue::makeInstance($prepared_params['uid']);
+        $eventPriorityValue = EventPriorityValue::makeInstance($prepared_params['priority']);
+        $eventConditionList = $this->eventConditionListFactory->makeEventConditionList($prepared_params['event_condition_list']);
+        $eventValueList = $this->eventValueListFactory->makeEventValueList($prepared_params['event_value_list']);
+
+        return Event::makeInstance($eventUidValue, $eventPriorityValue, $eventConditionList, $eventValueList);
+
 
     }
 
+
+    public function prepareEventValueFromSource(string $value, string $type): mixed
+    {
+        $types =
+        [
+            'integer' => fn(string $value) => (int)$value,
+            'boolean' => fn(string $value) => ("true" === $value) ? true : false,
+            
+        ];
+        if (isset($types[$type])) {
+            $value = $types[$type]($value);
+        }
+        return $value;
+    }
+
+
+    public function prepareEventConditionValueToSource(EventConditionValueInterface $eventConditionValue): array
+    {
+        $transform_mapping_list = 
+        [
+            IntegerEventConditionValue::class => function(IntegerEventConditionValue $eventConditionValue) {
+                return 
+                [
+                    'key' => $eventConditionValue->getKey(),
+                    'value' => (string)$eventConditionValue->getValue(),
+                    'type' => 'integer',
+                ];
+            },
+            BooleanEventConditionValue::class => function(BooleanEventConditionValue $eventConditionValue) {
+                return 
+                [
+                    'key' => $eventConditionValue->getKey(),
+                    'value' => (true === $eventConditionValue->getValue()) ? "true" : "false",
+                    'type' => "boolean",
+                ];  
+            },
+            StringEventConditionValue::class => function(StringEventConditionValue $eventConditionValue) {
+                return 
+                [
+                    'key' => $eventConditionValue->getKey(),
+                    'value' => $eventConditionValue->getValue(),
+                    'type' => "string",
+                ];
+            },
+        ];
+
+        $eventConditionValueClass = get_class($eventConditionValue);
+        return $transform_mapping_list[$eventConditionValueClass]($eventConditionValue);
+
+    }
+
+    public function prepareEventValueToSource(EventValueInterface $eventValue): array
+    {
+        $transform_mapping_list =
+        [
+            IntegerEventValue::class => function(IntegerEventValue $eventValue) {
+                return
+                [
+                    'key' => $eventValue->getKey(),
+                    'value' => (string)$eventValue->getValue(),
+                    'type' => "integer",
+                ];
+            },
+            BooleanEventValue::class => function(BooleanEventValue $eventValue) {
+                return
+                [
+                    'key' => $eventValue->getKey(),
+                    'value' => (true === $eventValue->getValue()) ? "true" : "false",
+                    'type' => "boolean",
+                ];
+            },
+            StringEventValue::class => function(StringEventValue $eventValue) {
+                return 
+                [
+                    'key' => $eventValue->getKey(),
+                    'value' => $eventValue->getValue(),
+                    'type' => "string",
+                ];
+            }
+        ];
+
+        $eventValueClass  = get_class($eventValue);
+        return $transform_mapping_list[$eventValueClass]($eventValue);
+    }
 
 
 }
