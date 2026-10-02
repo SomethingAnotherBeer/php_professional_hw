@@ -28,4 +28,15 @@ class Message
     {
         return $this->status;
     }
+
+    public function asArray()
+    {
+        return 
+        [
+            'message' => $this->message,
+        ];
+    }
+
+    
+
 }

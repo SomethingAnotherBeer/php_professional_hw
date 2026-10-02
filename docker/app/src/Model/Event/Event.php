@@ -60,4 +60,16 @@ class Event
         return $this->eventValueList;
     }
 
+    public function asArray(): array
+    {
+        $params =
+        [
+            'event_uid' => $this->getEventUid(),
+            'event_priority' => $this->getEventPriority(),
+            'event_condition_list' => $this->eventConditionList->asArray(),
+            'event_value_list' => $this->eventValueList->asArray(),
+        ];
+        return array_filter($params, fn(mixed $param) => null !== $param);
+    }
+
 }

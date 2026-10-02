@@ -68,5 +68,10 @@ class EventList implements Iterator
         return isset($this->event_list[$this->position]);
     }
 
+    public function asArray(): array
+    {
+        return array_map(fn(Event $event) => $event->asArray(), $this->event_list);
+    }
+
 
 }

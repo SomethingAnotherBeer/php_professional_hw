@@ -15,8 +15,9 @@ class EventListFactory
 
     /**
      * @param EventEntity[] $entity_list
+     * @return EventList
      */
-    public function makeEventListFromEntityList(array $entity_list)
+    public function makeEventListFromEntityList(array $entity_list): EventList
     {
         $eventList = EventList::makeInstance();
         foreach ($entity_list as $event) {
