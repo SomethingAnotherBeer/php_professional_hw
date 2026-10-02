@@ -7,7 +7,7 @@ use Iterator;
 class EventConditionList implements Iterator
 {   
     /**
-     * @EventConditionInterface $event_condition_list
+     * @var EventConditionInterface[] $event_condition_list
      */
     private array $event_condition_list;
 
@@ -68,6 +68,16 @@ class EventConditionList implements Iterator
     public function valid(): bool
     {
         return isset($this->event_condition_list[$this->position]);
+    }
+
+    public function asArray(): array
+    {
+        $params = [];
+        foreach ($this->event_condition_list as $eventCondition) {
+            $params[$eventCondition->getKey()] = $eventCondition->getValue();
+        }
+
+        return $params;
     }
 
 }

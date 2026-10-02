@@ -69,4 +69,14 @@ class EventValueList implements Iterator
     {
         return isset($this->event_value_list[$this->position]);
     }
+
+    public function asArray(): array
+    {
+        $params = [];
+        foreach ($this->event_value_list as $eventValue) {
+            $params[$eventValue->getKey()] = $eventValue->getValue();
+        }
+
+        return $params;
+    }
 }
