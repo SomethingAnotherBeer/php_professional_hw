@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace App\Exception\Event;
 
-class EventPriorityCannotBeLessOrEqualZeroException extends \Exception
+use App\Exception\BadDataExceptionInterface;
+
+class EventPriorityCannotBeLessOrEqualZeroException extends \Exception implements BadDataExceptionInterface
 {
 
 }

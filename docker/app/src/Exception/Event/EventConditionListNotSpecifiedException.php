@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace App\Exception\Event;
 
-class EventConditionListNotSpecifiedException extends \Exception
+use App\Exception\BadDataExceptionInterface;
+
+class EventConditionListNotSpecifiedException extends \Exception implements BadDataExceptionInterface
 {
     
 }

@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace App\Exception\Event;
 
-class EventUidCantBeEmptyException extends \Exception
+use App\Exception\BadDataExceptionInterface;
+
+class EventUidCantBeEmptyException extends \Exception implements BadDataExceptionInterface
 {
 
 }

@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace App\Exception\Event;
 
-class EventNotFoundException extends \Exception
+use App\Exception\NotFoundExceptionInterface;
+
+class EventNotFoundException extends \Exception implements NotFoundExceptionInterface
 {
     
 }

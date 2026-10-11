@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace App\Exception\Event;
 
-class EventUidNotSpecifiedException extends \Exception
+use App\Exception\BadDataExceptionInterface;
+
+class EventUidNotSpecifiedException extends \Exception implements BadDataExceptionInterface
 {
     
 }

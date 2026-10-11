@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace App\Exception\Event;
 
-class EventAlreadyExistsException extends \Exception
+use App\Exception\NotAllowedExceptionInterface;
+
+class EventAlreadyExistsException extends \Exception implements NotAllowedExceptionInterface
 {
     
 }

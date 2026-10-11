@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace App\Exception\Client;
 
-class ClientPortNotSpecifiedException extends \Exception
+use App\Exception\BadDataExceptionInterface;
+
+class ClientPortNotSpecifiedException extends \Exception implements BadDataExceptionInterface
 {
     
 }

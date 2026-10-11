@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace App\Exception\EventDTO;
 
-class IntegerEventConditionKeysDiscoveredException extends \Exception
+use App\Exception\BadDataExceptionInterface;
+
+class IntegerEventConditionKeysDiscoveredException extends \Exception implements BadDataExceptionInterface
 {
 
 }
