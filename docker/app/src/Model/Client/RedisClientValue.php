@@ -53,15 +53,15 @@ class RedisClientValue
 
     public static function makeInstanceFromArray(array $redis_params)
     {
-        if (!isset($redis_params['redis_host']) || !is_string($redis_params['redis_host'])) {
+        if (!isset($redis_params['REDIS_HOST']) || !is_string($redis_params['REDIS_HOST'])) {
             throw new RedisHostNotSpecifiedException("Не указан хост редиса");
         }
 
-        if (!isset($redis_params['redis_port']) || !is_int($redis_params['redis_port'])) {
+        if (!isset($redis_params['REDIS_PORT']) || !is_int($redis_params['REDIS_PORT'])) {
             throw new RedisPortNotSpecifiedException("Не указан порт редиса");
         }
 
-        return static::makeInstance($redis_params['redis_host'], $redis_params['redis_port']);
+        return static::makeInstance($redis_params['REDIS_HOST'], $redis_params['REDIS_PORT']);
     }
 
 }

@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     libssl-dev \
     && docker-php-ext-install iconv mbstring zip \
-    && pecl install redis
+    && pecl install redis \
+    && docker-php-ext-enable redis
 
 USER 1000:1000
 EXPOSE 9000

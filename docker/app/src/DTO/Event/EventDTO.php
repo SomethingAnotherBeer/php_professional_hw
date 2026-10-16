@@ -33,7 +33,7 @@ class EventDTO
         $eventConditionList = null;
         $eventValueList = null;
 
-        if (isset($params['event_uid']) && is_int($params['event_uid'])) {
+        if (isset($params['event_uid']) && is_string($params['event_uid'])) {
             $event_uid = $params['event_uid'];
         }
 

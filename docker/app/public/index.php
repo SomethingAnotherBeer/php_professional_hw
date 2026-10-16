@@ -15,8 +15,8 @@ $client_params =
 [
     'REDIS' =>
     [
-        'REDIS_HOST',
-        'REDIS_PORT'
+        'REDIS_HOST' => fn(string $redis_host) => trim($redis_host),
+        'REDIS_PORT' => fn(string $redis_port) => (int)trim($redis_port),
     ],
     
 ];
@@ -30,11 +30,12 @@ if (!isset($available_clients[$current_client]) || false === $available_clients[
 }
 
 $current['client'] = [];
-foreach ($client_params[$current_client] as $client_param) {
-    $current['client'][] = getenv($client_param);
+foreach ($client_params[$current_client] as $client_param_key => $client_param_prepare) {
+    $current['client'][$client_param_key] =  $client_param_prepare(getenv($client_param_key));
 }
 //$current['client'] = array_filter($current, fn(string|false $param) => false !== $param);
 $current['client_mode'] = $current_client;
+
 
 $app = new App();
 $app->run($current);

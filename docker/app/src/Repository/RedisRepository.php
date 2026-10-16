@@ -7,7 +7,7 @@ use App\Client\RedisClient;
 use App\Mapper\Event\RedisEventMapper;
 use App\Trait\Event\EventCompareTrait;
 
-class RedisRepository
+class RedisRepository implements EventRepositoryInterface
 {
     use EventCompareTrait;
 
@@ -32,9 +32,9 @@ class RedisRepository
         $event = null;
 
         $event_params = $this->redisClient->getConnection()->get($this->prepareEventUid($event_uid));
-        $event_params = json_decode($event_params, true);
 
         if ($event_params) {
+            $event_params = json_decode($event_params, true);
             $event = $this->eventMapper->fromSourceToEntity($event_params);
         }
 
@@ -53,7 +53,7 @@ class RedisRepository
         return $event;
     }
 
-    public function changeEvent(Event $event)
+    public function changeEvent(Event $event): Event
     {
         $event_params = $this->eventMapper->fromEntityToSource($event);
         $event_params = json_encode($event_params, JSON_UNESCAPED_UNICODE);
@@ -76,21 +76,21 @@ class RedisRepository
     public function findEventsByConditionList(EventConditionList $eventConditionList): array
     {
         $coinciding_event_list = [];
+        $iterator = null;
         $count = 100;
         $connection = $this->redisClient->getConnection();
 
         $keys = [];
-
-        while ($keys = $connection->scan($iterator, static::EVENT_PREFIX, $count)) {
+        
+        while ($keys = $connection->scan($iterator, static::EVENT_PREFIX . "*", $count)) {
             $event_params_list = $connection->mget($keys);
             if (is_array($event_params_list) && count($event_params_list) > 0) {
-                $event_list = array_map(fn(array $event_params) => $this->eventMapper->fromSourceToEntity($event_params), $event_params_list);
-                foreach ($event_list as $event) {
+                foreach ($event_params_list as $event_param) {
+                    $event = $this->eventMapper->fromSourceToEntity(json_decode($event_param, true));
                     if ($this->compareEventConditionListsIsEquals($event->getEventConditionList(), $eventConditionList)) {
                         $coinciding_event_list[] = $event;
                     }
                 }
-
             } 
         }
 
@@ -107,7 +107,7 @@ class RedisRepository
 
         $keys = [];
 
-        while ($keys = $connection->scan($iterator, static::EVENT_PREFIX, $count)) {
+        while ($keys = $connection->scan($iterator, static::EVENT_PREFIX . "*", $count)) {
             $current_removed_count = $connection->del(...$keys);
             if ($current_removed_count) {
                 $removed_count+= $current_removed_count;
