@@ -13,10 +13,15 @@ class MongoEventRepository
     protected MongoClient $mongoClient;
     protected MongoEventMapper $eventMapper;
 
+    public const COLLECTION_NAME = "events_collection";
+
     public function __construct(MongoClient $mongoClient, MongoEventMapper $eventMapper)
     {
         $this->mongoClient = $mongoClient;
         $this->eventMapper = $eventMapper;
+    
+        $this->mongoClient->setCollection(static::COLLECTION_NAME);
+
     }
 
 

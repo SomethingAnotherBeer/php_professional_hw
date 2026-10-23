@@ -35,12 +35,11 @@ class MongoClient
         $this->client = new Client("mongodb://{$mongo_user}:{$mongo_password}@{$mongo_host}:{$mongo_port}");
 
         $this->database = $this->client->selectDatabase($mongoClientValue->getMongoDb());
-        $this->currentCollection = $this->client->selectCollection($mongoClientValue->getMongoDb(), $mongoClientValue->getMongoCollection());
 
     }
 
 
-    public function changeCollection(string $collection_name): Collection
+    public function setCollection(string $collection_name): Collection
     {
         $this->currentCollection = $this->client->selectCollection($this->database->getDatabaseName(), $collection_name);
         return $this->currentCollection;

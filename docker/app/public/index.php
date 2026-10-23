@@ -26,6 +26,14 @@ $client_params =
         'ELASTIC_USER' => fn(string  $elastic_user) => trim($elastic_user),
         'ELASTIC_PASSWORD' => fn(string $elastic_password) => trim($elastic_password),
     ],
+    'MONGO' =>
+    [
+        'MONGO_USER' => fn(string $mongo_user) => trim($mongo_user),
+        'MONGO_PASSWORD' => fn(string $mongo_password) => trim($mongo_password),
+        'MONGO_HOST' => fn(string $mongo_host) => trim($mongo_host),
+        'MONGO_PORT' => fn(string $mongo_port) => (int)trim($mongo_port),
+        'MONGO_DB' => fn(string $mongo_db) => trim($mongo_db),
+    ],
     
 ];
 

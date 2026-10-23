@@ -2,8 +2,7 @@
 declare(strict_types=1);
 namespace App\Model\Client;
 
-use App\Exception\Client\Mongo\MongoCollectionCannotBeEmptyException;
-use App\Exception\Client\Mongo\MongoCollectionNotSpecifiedException;
+
 use App\Exception\Client\Mongo\MongoDbCannotBeEmptyException;
 use App\Exception\Client\Mongo\MongoDbNotSpecifiedException;
 use App\Exception\Client\Mongo\MongoHostCannotBeEmptyException;
@@ -27,15 +26,12 @@ class MongoClientValue
 
     private string $mongo_db;
 
-    private string $mongo_collection;
-
-    public function __construct(string $mongo_user, string $mongo_password, string $mongo_host, string $mongo_db, string $mongo_collection, int $mongo_port)
+    public function __construct(string $mongo_user, string $mongo_password, string $mongo_host, string $mongo_db, int $mongo_port)
     {
         $this->checkMongoUser($mongo_user);
         $this->checkMongoPassword($mongo_password);
         $this->checkMongoHost($mongo_host);
         $this->checkMongoDb($mongo_db);
-        $this->checkMongoCollection($mongo_collection);
         $this->checkMongoPort($mongo_port);
 
 
@@ -43,13 +39,12 @@ class MongoClientValue
         $this->mongo_password = $mongo_password;
         $this->mongo_host = $mongo_host;
         $this->mongo_db = $mongo_db;
-        $this->mongo_collection = $mongo_collection;
         $this->mongo_port = $mongo_port;
     }
 
-    public static function makeInstance(string $mongo_user, string $mongo_password, string $mongo_host, string $mongo_db, string $mongo_collection, int $mongo_port): MongoClientValue
+    public static function makeInstance(string $mongo_user, string $mongo_password, string $mongo_host, string $mongo_db, int $mongo_port): MongoClientValue
     {
-        return new MongoClientValue($mongo_user, $mongo_password, $mongo_host, $mongo_db, $mongo_collection, $mongo_port);
+        return new MongoClientValue($mongo_user, $mongo_password, $mongo_host, $mongo_db, $mongo_port);
     }
 
     public static function makeInstanceFromArray(array $mongo_params): MongoClientValue
@@ -70,10 +65,6 @@ class MongoClientValue
             throw new MongoDbNotSpecifiedException("Не указана база данных mongo");
         }
 
-        if (!isset($mongo_params['MONGO_COLLECTION']) || !is_string($mongo_params['MONGO_COLLECTION'])) {
-            throw new MongoCollectionNotSpecifiedException("Не указана коллекция mongo");
-        }
-
         if (!isset($mongo_params['MONGO_PORT']) || !is_int($mongo_params['MONGO_PORT'])) {
             throw new MongoPortNotSpecifiedException("Не указан порт mongo");
         }
@@ -83,7 +74,6 @@ class MongoClientValue
             $mongo_params['MONGO_PASSWORD'], 
             $mongo_params['MONGO_HOST'],
             $mongo_params['MONGO_DB'],
-            $mongo_params['MONGO_COLLECTION'],
             $mongo_params['MONGO_PORT']
             );
     }
@@ -108,12 +98,7 @@ class MongoClientValue
     {
         return $this->mongo_db;
     }
-
-    public function getMongoCollection(): string
-    {
-        return $this->mongo_collection;
-    }
-
+    
     public function getMongoPort(): int
     {
         return $this->mongo_port;
@@ -145,13 +130,6 @@ class MongoClientValue
         if ('' === trim($mongo_db)) {
             throw new MongoDbCannotBeEmptyException("База данных mongo не может иметь пустое значение");
         }
-    }
-
-    private function checkMongoCollection(string $mongo_collection): void
-    {
-        if ('' === trim($mongo_collection)) {
-            throw new MongoCollectionCannotBeEmptyException("Значение строки коллекции mongo не может иметь пустое значение");
-        }       
     }
 
     private function checkMongoPort(int $mongo_port): void
