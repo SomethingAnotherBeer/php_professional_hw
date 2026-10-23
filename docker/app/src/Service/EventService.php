@@ -119,7 +119,7 @@ class EventService
             $eventEntity->setEventValueList($currentEvent->getEventValueList());
         }
 
-        $this->eventRepository->changeEvent($eventEntity);
+        $this->eventRepository->changeEvent($eventEntity->getEventUid(), $currentEvent);
         return $this->eventFactory->makeEventFromEntity($eventEntity);
 
     }

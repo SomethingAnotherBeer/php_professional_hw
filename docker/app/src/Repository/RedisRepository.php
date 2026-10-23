@@ -5,6 +5,7 @@ use App\Model\Event\EventCondition\EventConditionList;
 use App\Entity\Event\Event;
 use App\Client\RedisClient;
 use App\Mapper\Event\RedisEventMapper;
+use App\Model\Event\Event as EventModel;
 use App\Trait\Event\EventCompareTrait;
 
 class RedisRepository implements EventRepositoryInterface
@@ -53,14 +54,24 @@ class RedisRepository implements EventRepositoryInterface
         return $event;
     }
 
-    public function changeEvent(Event $event): Event
+    public function changeEvent(string $event_uid, EventModel $event): Event
     {
-        $event_params = $this->eventMapper->fromEntityToSource($event);
-        $event_params = json_encode($event_params, JSON_UNESCAPED_UNICODE);
 
-        $this->redisClient->getConnection()->set($this->prepareEventUid($event->getEventUid()), $event_params);
+        $target = $this->getEventByUid($event_uid);
+        $target_params = $this->eventMapper->fromEntityToSource($target);
+        $changed_params = $event->asArray();
 
-        return $event;
+        $changed_rows = array_intersect($changed_params, $target_params);
+
+        foreach ($changed_rows as $changed_row) {
+            $target_params[$changed_row] = $changed_params[$changed_row];
+        }
+
+        $event_params = json_encode($target_params, JSON_UNESCAPED_UNICODE);
+
+        $this->redisClient->getConnection()->set($this->prepareEventUid($event_uid), $event_params);
+
+        return $this->eventMapper->fromSourceToEntity($target_params);
     }
 
     public function removeEvent(Event $event): Event

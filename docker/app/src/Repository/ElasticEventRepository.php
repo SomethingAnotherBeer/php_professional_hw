@@ -6,6 +6,7 @@ use App\Client\ElasticClient;
 use App\Client\RedisClient;
 use App\Entity\Event\Event;
 use App\Mapper\Event\ElasticEventMapper;
+use App\Model\Event\Event as EventModel;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 use App\Model\Event\EventCondition\EventConditionList;
 
@@ -60,17 +61,32 @@ class ElasticEventRepository implements EventRepositoryInterface
 
     }
 
-    public function changeEvent(Event $event): Event
+    public function changeEvent(string $event_uid, EventModel $eventModel): Event
     {
+
+        $changed_params = [];
+
+        if (null !== $eventModel->getEventPriority()) {
+            $changed_params['event_priority'] = $eventModel->getEventPriority();
+        }
+        if (null !== $eventModel->getEventConditionList()) {
+            $changed_params['event_condition_list'] = $this->eventMapper->mapEventConditionListToSource($eventModel->getEventConditionList());
+        }
+        if (null !== $eventModel->getEventValueList()) {
+            $changed_params['event_value_list'] = $this->eventMapper->mapEventValueListToSource($eventModel->getEventValueList());
+        }
+
         $params =
         [
             'index' => $this->elasticClient->getIndex(),
-            'id' => $event->getEventUid(),
-            'body' => $this->eventMapper->fromEntityToSource($event),
+            'id' => $event_uid,
+            'body' => [
+                'doc' => $changed_params,
+            ]
         ];
 
-        $this->elasticClient->getConnection()->index($params);
-        return $event;
+        $this->elasticClient->getConnection()->update($params);
+        return $this->getEventByUid($event_uid);
     }
 
     public function removeEvent(Event $event): Event

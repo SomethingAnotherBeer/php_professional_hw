@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Event\Event;
+use App\Model\Event\Event as EventModel;
 use App\Model\Event\EventCondition\EventConditionList;
 
 interface EventRepositoryInterface
@@ -11,7 +12,7 @@ interface EventRepositoryInterface
 
     public function createEvent(Event $event): Event;
 
-    public function changeEvent(Event $event): Event;
+    public function changeEvent(string $event_uid, EventModel $event): Event;
 
     public function removeEvent(Event $event): Event;
 
