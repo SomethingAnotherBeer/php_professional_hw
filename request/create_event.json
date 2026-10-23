@@ -1,6 +1,6 @@
 {
-	"event_uid": "112",
-	"event_priority": 25,
+	"event_uid": "111",
+	"event_priority": 20,
 	"event_condition_list": {
 		"one": 111,
 		"two": true,

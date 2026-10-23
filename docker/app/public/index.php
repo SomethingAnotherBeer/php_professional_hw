@@ -9,6 +9,7 @@ require_once __DIR__ . '/../src/App.php';
 $available_clients =
 [
     'REDIS' => true,
+    'ELASTIC' => true,
 ];
 
 $client_params =
@@ -17,6 +18,13 @@ $client_params =
     [
         'REDIS_HOST' => fn(string $redis_host) => trim($redis_host),
         'REDIS_PORT' => fn(string $redis_port) => (int)trim($redis_port),
+    ],
+    'ELASTIC' =>
+    [
+        'ELASTIC_URL' => fn(string $elastic_url) => trim($elastic_url),
+        'ELASTIC_INDEX' => fn(string $elastic_index) => trim($elastic_index),
+        'ELASTIC_USER' => fn(string  $elastic_user) => trim($elastic_user),
+        'ELASTIC_PASSWORD' => fn(string $elastic_password) => trim($elastic_password),
     ],
     
 ];

@@ -30,12 +30,18 @@ class ElasticEventMapper
 
     public function fromEntityToSource(Event $event): array
     {   
+        $event_condition_list = $this->mapEventConditionListToSource($event->getEventConditionList());
+        $event_value_list = $this->mapEventValueListToSource($event->getEventValueList());
+
         return 
         [
             'event_uid' => $event->getEventUid(),
             'event_priority' => $event->getEventPriority(),
-            'event_condition_list' => $this->mapEventConditionListToSource($event->getEventConditionList()),
-            'event_value_list' => $this->mapEventValueListToSource($event->getEventValueList()),
+            'event_condition_list' => $event_condition_list,
+            'event_value_list' => $event_value_list,
+            'event_condition_list_count' => count($event_condition_list),
+            'event_value_list_count' => count($event_value_list),
+            
         ];
     }
 

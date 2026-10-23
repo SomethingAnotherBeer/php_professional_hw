@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Builder\Http\ResponseBuilder;
+use App\Client\ElasticClient;
 use App\Client\RedisClient;
 use App\Constants\ClientConstantList;
 use App\Controller\EventController;
@@ -16,7 +17,9 @@ use App\Exception\Http\HttpException;
 use App\Exception\NotFoundExceptionInterface;
 use App\Http\Header;
 use App\Http\Response;
+use App\Model\Client\ElasticClientValue;
 use App\Model\Client\RedisClientValue;
+use App\Repository\ElasticEventRepository;
 use App\Repository\EventRepositoryInterface;
 use App\Repository\RedisRepository;
 use DI\Container;
@@ -169,6 +172,18 @@ class App
                     },
                 ]);
             
+        }
+
+        if ($client_mode === ClientConstantList::ELASTIC_MODE) {
+            $containerBuilder->addDefinitions(
+                [
+                    EventRepositoryInterface::class => \DI\autowire(ElasticEventRepository::class),
+                    ElasticClient::class => function() use ($client_params) {
+                        $elasticClientValue = ElasticClientValue::makeInstanceFromArray($client_params);
+                        return ElasticClient::makeInstance($elasticClientValue);
+                    }
+                ]
+            );
         }
     }
     
