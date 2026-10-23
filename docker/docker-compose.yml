@@ -57,6 +57,17 @@ services:
     networks:
       - application_network
 
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+    expose:
+      - "27017"
+    networks:
+      - application_network
+    
 
   elastic-init:
     image: curlimages/curl:8.7.1
