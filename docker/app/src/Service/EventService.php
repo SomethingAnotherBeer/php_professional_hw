@@ -140,7 +140,11 @@ class EventService
     public function getEventsByConditionList(EventConditionListDTO $eventConditionListDTO): EventList
     {
         $eventConditionList = $this->eventConditionListFactory->makeFromDTO($eventConditionListDTO);
+        
         $event_list = $this->eventRepository->findEventsByConditionList($eventConditionList);
+        $event_list = $this->extractEventListWithMaxPriority($event_list);
+
+
 
         return $this->eventListFactory->makeEventListFromEntityList($event_list);
     }
@@ -212,6 +216,24 @@ class EventService
 
         return $is_equals;
 
+
+    }
+
+    /**
+     * @param EventEntity[] $event_list
+     * @return EventEntity[]
+     */
+    protected function extractEventListWithMaxPriority(array $event_list): array
+    {
+        $max_priorirty = 0;
+        foreach ($event_list as $event) {
+            if ($event->getEventPriority() > $max_priorirty) {
+                $max_priorirty = $event->getEventPriority();
+            }
+        }
+        $event_list = array_filter($event_list, fn(EventEntity $event) => $event->getEventPriority() === $max_priorirty);
+
+        return $event_list;
 
     }
 
