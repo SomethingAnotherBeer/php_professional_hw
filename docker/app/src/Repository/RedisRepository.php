@@ -61,7 +61,7 @@ class RedisRepository implements EventRepositoryInterface
         $target_params = $this->eventMapper->fromEntityToSource($target);
         $changed_params = $event->asArray();
 
-        $changed_rows = array_intersect($changed_params, $target_params);
+        $changed_rows = array_intersect(array_keys($changed_params), array_keys($target_params));
 
         foreach ($changed_rows as $changed_row) {
             $target_params[$changed_row] = $changed_params[$changed_row];

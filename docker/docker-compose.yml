@@ -75,7 +75,7 @@ services:
     container_name: elastic-init
     user: root
     environment:
-      - ELASTIC_URL=${ELASTIC_URL}
+      - ELASTIC_URL=${ELASTIC_HOST}
       - ELASTIC_INDEX=${ELASTIC_INDEX}
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
     volumes:

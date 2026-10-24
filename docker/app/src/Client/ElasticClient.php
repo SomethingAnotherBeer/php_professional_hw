@@ -14,11 +14,12 @@ class ElasticClient
 
     protected string $index;
 
-    public static function makeInstance(ElasticClientValue $elasticClientValue)
+    public static function makeInstance(ElasticClientValue $elasticClientValue): ElasticClient
     {
         if (!static::$elasticClient) {
             static::$elasticClient = new ElasticClient($elasticClientValue);
         }
+        return static::$elasticClient;
     }
 
     protected function __construct(ElasticClientValue $elasticClientValue)

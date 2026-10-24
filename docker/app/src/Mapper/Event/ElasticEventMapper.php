@@ -191,11 +191,11 @@ class ElasticEventMapper
         }
 
         $eventValueList = EventValueList::makeInstance();
-
+        
         $types = 
         [
             static::INTEGER_EVENT_VALUE_TYPE => function(array $event_value_params): IntegerEventValue {
-                return IntegerEventValue::makeInstance($event_value_params['key'], $event_value_params['value']);
+                return IntegerEventValue::makeInstance($event_value_params['key'], (int)$event_value_params['value']);
             },
             static::BOOLEAN_EVENT_VALUE_TYPE => function(array $event_value_params): BooleanEventValue {
                 $value = null;

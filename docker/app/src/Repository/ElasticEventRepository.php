@@ -3,44 +3,45 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Client\ElasticClient;
-use App\Client\RedisClient;
 use App\Entity\Event\Event;
 use App\Mapper\Event\ElasticEventMapper;
 use App\Model\Event\Event as EventModel;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 use App\Model\Event\EventCondition\EventConditionList;
+use Elastic\Elasticsearch\Exception\ClientResponseException;
 
 class ElasticEventRepository implements EventRepositoryInterface
 {
     protected ElasticClient $elasticClient;
-    protected RedisClient $redisClient;
     protected ElasticEventMapper $eventMapper;
 
 
 
-    public function __construct(ElasticClient $elasticClient, RedisClient $redisClient, ElasticEventMapper $eventMapper)
+    public function __construct(ElasticClient $elasticClient, ElasticEventMapper $eventMapper)
     {
         $this->elasticClient = $elasticClient;
-        $this->redisClient = $redisClient;
         $this->eventMapper = $eventMapper;
     }
 
     public function getEventByUid(string $event_uid): ?Event
-    {
+    {       
+        $event = null;
+        $response_arr = [];
         $params = 
         [
             'index' => $this->elasticClient->getIndex(),
             'id' => $event_uid,
         ];
-        $response = $this->elasticClient->getConnection()->get($params);
-        $response_arr = $this->getPrepared($response);
 
-        $event = null;
-
-        if ($response_arr) {
+        try {
+            $response = $this->elasticClient->getConnection()->get($params);
+            $response_arr = $this->getPrepared($response);
             $event = $this->eventMapper->fromSourceToEntity($response_arr);
         }
-
+        catch(ClientResponseException $e) {
+            $event = null;
+        }
+        
         return $event;
 
         
@@ -48,6 +49,7 @@ class ElasticEventRepository implements EventRepositoryInterface
 
     public function createEvent(Event $event): Event
     {
+        
         $params =
         [
             'index' => $this->elasticClient->getIndex(),

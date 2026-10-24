@@ -21,7 +21,7 @@ $client_params =
     ],
     'ELASTIC' =>
     [
-        'ELASTIC_URL' => fn(string $elastic_url) => trim($elastic_url),
+        'ELASTIC_HOST' => fn(string $elastic_url) => trim($elastic_url),
         'ELASTIC_INDEX' => fn(string $elastic_index) => trim($elastic_index),
         'ELASTIC_USER' => fn(string  $elastic_user) => trim($elastic_user),
         'ELASTIC_PASSWORD' => fn(string $elastic_password) => trim($elastic_password),
