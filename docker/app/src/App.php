@@ -4,6 +4,7 @@ namespace App;
 
 use App\Builder\Http\ResponseBuilder;
 use App\Client\ElasticClient;
+use App\Client\MongoClient;
 use App\Client\RedisClient;
 use App\Constants\ClientConstantList;
 use App\Controller\EventController;
@@ -18,9 +19,11 @@ use App\Exception\NotFoundExceptionInterface;
 use App\Http\Header;
 use App\Http\Response;
 use App\Model\Client\ElasticClientValue;
+use App\Model\Client\MongoClientValue;
 use App\Model\Client\RedisClientValue;
 use App\Repository\ElasticEventRepository;
 use App\Repository\EventRepositoryInterface;
+use App\Repository\MongoEventRepository;
 use App\Repository\RedisRepository;
 use DI\Container;
 use DI\ContainerBuilder;
@@ -161,7 +164,7 @@ class App
     }
 
     protected function setClientMode(ContainerBuilder $containerBuilder, string $client_mode, array $client_params)
-    {       
+    {   
         if ($client_mode === ClientConstantList::REDIS_MODE) {
             $containerBuilder->addDefinitions(
                 [
@@ -181,6 +184,18 @@ class App
                     ElasticClient::class => function() use ($client_params) {
                         $elasticClientValue = ElasticClientValue::makeInstanceFromArray($client_params);
                         return ElasticClient::makeInstance($elasticClientValue);
+                    }
+                ]
+            );
+        }
+
+        if ($client_mode === ClientConstantList::MONGO_MODE) {
+            $containerBuilder->addDefinitions(
+                [
+                    EventRepositoryInterface::class => \DI\autowire(MongoEventRepository::class),
+                    MongoClient::class => function() use ($client_params) {
+                        $mongoClientValue = MongoClientValue::makeInstanceFromArray($client_params);
+                        return MongoClient::makeInstance($mongoClientValue);
                     }
                 ]
             );

@@ -10,6 +10,7 @@ $available_clients =
 [
     'REDIS' => true,
     'ELASTIC' => true,
+    'MONGO' => true,
 ];
 
 $client_params =

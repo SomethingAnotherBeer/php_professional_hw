@@ -26,7 +26,7 @@ class MongoEventMapper
         return 
         [
             '_id' => $event->getEventUid(),
-            'event_ud' => $event->getEventUid(),
+            'event_uid' => $event->getEventUid(),
             'event_priority' => $event->getEventPriority(),
             'event_condition_list' => $event->getEventConditionList()->asArray(),
             'event_value_list' => $event->getEventValueList()->asArray(),
