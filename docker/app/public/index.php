@@ -2,9 +2,14 @@
 declare(strict_types=1);
 
 use App\App;
+use Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/App.php';
+
+$dotenv = Dotenv::createImmutable('/env');
+$dotenv->load();
+
 
 $available_clients =
 [
@@ -12,6 +17,9 @@ $available_clients =
     'ELASTIC' => true,
     'MONGO' => true,
 ];
+
+
+
 
 $client_params =
 [
@@ -40,7 +48,7 @@ $client_params =
 
 $current = [];
 
-$current_client = getenv('CLIENT');
+$current_client = $_ENV['CLIENT'];
 
 if (!isset($available_clients[$current_client]) || false === $available_clients[$current_client]) {
     $current_client = 'REDIS';
@@ -48,7 +56,7 @@ if (!isset($available_clients[$current_client]) || false === $available_clients[
 
 $current['client'] = [];
 foreach ($client_params[$current_client] as $client_param_key => $client_param_prepare) {
-    $current['client'][$client_param_key] =  $client_param_prepare(getenv($client_param_key));
+    $current['client'][$client_param_key] =  $client_param_prepare($_ENV[$client_param_key]);
 }
 //$current['client'] = array_filter($current, fn(string|false $param) => false !== $param);
 $current['client_mode'] = $current_client;

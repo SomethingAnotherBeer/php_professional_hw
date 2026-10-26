@@ -23,10 +23,10 @@ services:
     container_name: "app"
     volumes:
       - ./app:/var/www/app
+      - ./.env:/env/.env
     expose:
       - "9000"
-    env_file:
-      - .env
+   
     networks:
       - application_network
 

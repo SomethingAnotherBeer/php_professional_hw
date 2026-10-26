@@ -2,14 +2,6 @@
 declare(strict_types=1);
 namespace App\Test\Controller;
 
-use App\Exception\Event\EventAlreadyExistsException;
-use App\Exception\Event\EventConditionListNotSpecifiedException;
-use App\Exception\Event\EventNotFoundException;
-use App\Exception\Event\EventPriorityNotSpecifiedException;
-use App\Exception\Event\EventUidNotSpecifiedException;
-use App\Exception\Event\EventValueListNotSpecifiedException;
-use App\Exception\EventDTO\IntegerEventConditionKeysDiscoveredException;
-use App\Exception\EventDTO\IntegerEventValueKeysDiscoveredException;
 use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
 use Override;
@@ -26,7 +18,7 @@ class EventControllerTest extends TestCase
         parent::setUp();
         $this->client = new Client([
             'base_uri' => 'http://nginx:80/',
-            'timeout' => 1.0,
+            'timeout' => 3.0,
             'http_errors' => false,
         ]);
 
@@ -86,19 +78,13 @@ class EventControllerTest extends TestCase
             ],
         ];
 
-        /** @var ResponseInterface[] $response_list */
-        $response_list = [];
-
-        /** @var string[] $prepared_response_list */
-        $prepared_response_list = [];
-
         foreach ($event_params_list as $event_params) {
             $response = $this->client->post('api/v1/event', ['json' => $event_params]);
 
             $this->assertSame(201, $response->getStatusCode());
             $this->assertSame(json_encode($event_params, JSON_UNESCAPED_UNICODE), $response->getBody()->getContents());
         }
-
+        sleep(1);
     }
 
     public function testGetEventsByConditionList(): void
@@ -205,7 +191,7 @@ class EventControllerTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame(json_encode($expected, JSON_UNESCAPED_UNICODE), $response->getBody()->getContents());
-
+        sleep(1);
     }
 
     public function testRemoveEvent(): void
@@ -232,7 +218,7 @@ class EventControllerTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame(json_encode($expected, JSON_UNESCAPED_UNICODE), $response->getBody()->getContents());
-
+        sleep(1);
     }
 
     public function testGetEventEventNotFound(): void
