@@ -29,8 +29,9 @@ class EventConditionListDTO
     {
         $integer_keys = array_filter($event_condition_list, fn(string|int $key) => is_int($key), ARRAY_FILTER_USE_KEY);
         if (count($integer_keys) > 0) {
+            $integer_keys = array_keys($integer_keys);
             $integer_keys_msg = implode(", ", $integer_keys);
-            throw new IntegerEventConditionKeysDiscoveredException("Список условий события должен иметь только строковые ключи. Обнаружены следуюие целочисленные ключи: $integer_keys_msg");
+            throw new IntegerEventConditionKeysDiscoveredException("Список условий события должен иметь только строковые ключи. Обнаружены следующие целочисленные ключи: $integer_keys_msg");
         }
     }
 

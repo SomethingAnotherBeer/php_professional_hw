@@ -24,11 +24,11 @@ class EventValueListFactory
     }
 
     public function makeFromArray(array $event_value_list): EventValueList
-    {
+    {   
         $integer_keys = array_filter($event_value_list, fn(string|int $key) => is_int($key), ARRAY_FILTER_USE_KEY);
         if (count($integer_keys) > 0) {
             $integer_keys_msg = implode(", ", $integer_keys);
-            throw new IntegerEventValueKeysDiscoveredException("Список значений события должен иметь только строковые ключи. Обнаружены следуюие целочисленные ключи: $integer_keys_msg");
+            throw new IntegerEventValueKeysDiscoveredException("Список значений события должен иметь только строковые ключи. Обнаружены следующие целочисленные ключи: $integer_keys_msg");
         }
         $eventValueList = EventValueList::makeInstance();
         

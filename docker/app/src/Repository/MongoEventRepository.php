@@ -53,11 +53,11 @@ class MongoEventRepository implements EventRepositoryInterface
         }
 
         if (null !== $event->getEventConditionList()) {
-            $event_params['event_condition_list'] = $event->getEventConditionList();
+            $event_params['event_condition_list'] = $event->getEventConditionList()->asArray();
         }
 
         if (null !== $event->getEventValueList()) {
-            $event_params['event_value_list'] = $event->getEventValueList();
+            $event_params['event_value_list'] = $event->getEventValueList()->asArray();
         }
 
         $this->mongoClient->getCollection()->updateOne(['_id' => $event_uid], ['$set' => $event_params]);
