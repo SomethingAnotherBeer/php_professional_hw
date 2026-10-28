@@ -43,8 +43,7 @@ class App
         try {
             $containerBuilder = new ContainerBuilder();
             $containerBuilder->useAutowiring(true);
-
-            $this->setClientMode($containerBuilder, $params['client_mode'], $params['client']);        
+   
 
             $container = $containerBuilder->build();
             $dispatcher = simpleDispatcher(function(RouteCollector $r) {
@@ -163,44 +162,6 @@ class App
 
     }
 
-    protected function setClientMode(ContainerBuilder $containerBuilder, string $client_mode, array $client_params)
-    {   
-        if ($client_mode === ClientConstantList::REDIS_MODE) {
-            $containerBuilder->addDefinitions(
-                [
-                    EventRepositoryInterface::class => \DI\autowire(RedisRepository::class),
-                    RedisClient::class => function() use ($client_params) {
-                        $redisClientValue = RedisClientValue::makeInstanceFromArray($client_params);
-                        return RedisClient::makeInstance($redisClientValue);
-                    },
-                ]);
-            
-        }
-
-        if ($client_mode === ClientConstantList::ELASTIC_MODE) {
-            $containerBuilder->addDefinitions(
-                [
-                    EventRepositoryInterface::class => \DI\autowire(ElasticEventRepository::class),
-                    ElasticClient::class => function() use ($client_params) {
-                        $elasticClientValue = ElasticClientValue::makeInstanceFromArray($client_params);
-                        return ElasticClient::makeInstance($elasticClientValue);
-                    }
-                ]
-            );
-        }
-
-        if ($client_mode === ClientConstantList::MONGO_MODE) {
-            $containerBuilder->addDefinitions(
-                [
-                    EventRepositoryInterface::class => \DI\autowire(MongoEventRepository::class),
-                    MongoClient::class => function() use ($client_params) {
-                        $mongoClientValue = MongoClientValue::makeInstanceFromArray($client_params);
-                        return MongoClient::makeInstance($mongoClientValue);
-                    }
-                ]
-            );
-        }
-    }
     
 
     protected function prepareData(array $data): array
