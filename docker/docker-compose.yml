@@ -1,23 +1,7 @@
 services:
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    image: nginx
-    container_name: "nginx"
-    volumes:
-      - ./app:/var/www/app
-
-    ports:
-      - '80:80'
-    depends_on:
-      - app
-    networks:
-      - application_network
-    
   app:
     build:
-      context: ./fpm
+      context: ./cli
       dockerfile: Dockerfile
     image: app
     container_name: "app"
