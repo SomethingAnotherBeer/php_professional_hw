@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace App\Client;
 
+use App\Interface\SerialIdInterface;
 use App\Model\Client\ClientConnectionValue;
 use PDO;
 
@@ -37,6 +38,25 @@ class ClientConnection
     public function getConnection(): PDO
     {
         return $this->pdo;
+    }
+
+    public function getLastConnectionId(SerialIdInterface $object): ?string
+    {
+        $attribute = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        $last_id = null;
+
+        switch($attribute) {
+            case 'pgsql':
+                $table_name = $object->getTableName();
+                $id_name = $object->getIdName();
+                $last_id = $this->pdo->lastInsertId("{$table_name}_{$id_name}_seq");
+            break;
+            case 'mysql':
+                $last_id = $this->pdo->lastInsertId();
+            break;
+        }
+
+        return $last_id;
     }
 
 }
