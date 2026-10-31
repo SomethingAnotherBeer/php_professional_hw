@@ -13,7 +13,7 @@ class ProductGateway implements SerialIdInterface
 
     private ClientConnection $clientConnection;
 
-    public int $product_id;
+    public readonly int $product_id;
 
     public int $category_id;
 
@@ -85,33 +85,32 @@ class ProductGateway implements SerialIdInterface
 
 
 
-    public function update(array $params): static
+    public function update(): static
     {   
+        $product_params = 
+        [
+            'product_name' => $this->product_name,
+            'product_price' => $this->product_price,
+            'in_stock' => $this->in_stock,  
+        ];
+
         $query_args = [];
-        $binded = [];
+        $bind_list = [];
 
-        $sql = "UPDATE products";
-
-        if (isset($params['product_name']) && is_string($params['product_name'])) {
-            $query_args[] = "SET product_name = :product_name";
-            $binded[':product_name'] = $params[':product_name'];
-        }
-        if (isset($params['product_price']) && is_float($params['product_price'])) {
-            $query_args[] = "SET product_price = :product_price";
-            $binded[':product_price'] = $params['product_price'];
-        }
-        if (isset($params['in_stock']) && is_bool($params['in_stock'])) {
-            $query_args[] = "SET in_stock = :in_stock";
-            $binded[':in_stock'] = $params[':in_stock'];
+        foreach ($product_params as $key => $value) {
+            $query_args[] = "SET {$key} = :{$key}";
+            $bind_list[":{$key}"] = $value;
         }
 
-        if (count($query_args) > 0) {
-            $sql .= " " . implode(", ", $query_args);
-            $stmt = $this->clientConnection->getConnection()->prepare($sql);
-            $stmt->execute($binded);
+        $query_args_str = implode(', ', $query_args);
+        $bind_list[':product_id'] = $this->product_id;
 
-            $this->updateGateway($params);
-        }
+        $sql = "UPDATE products $query_args_str WHERE product_id = :product_id";
+
+        $stmt = $this->clientConnection->getConnection()->prepare($sql);
+        $stmt->execute($bind_list);
+
+
 
         return $this;
 
@@ -138,19 +137,27 @@ class ProductGateway implements SerialIdInterface
         return static::ID_NAME;
     }
 
-    protected function updateGateway(array $params): static
+
+    public function __toString(): string
     {
-        if (isset($params['product_name']) && is_string($params['product_name'])) {
-            $this->product_name = $params['product_name'];
-        }
-        if (isset($params['product_price']) && is_float($params['product_price'])) {
-            $this->product_price = $params['product_price'];
-        }
-        if (isset($params['in_stock']) && is_bool($params['in_stock'])) {
-            $this->in_stock = $params['in_stock'];
+        $product_params =
+        [
+            'product_id' => $this->product_id,
+            'category_id' => $this->category_id,
+            'product_name' => $this->product_name,
+            'product_price' => $this->product_price,
+            'in_stock' => $this->in_stock,
+        ];  
+
+        $str_product_params = [];
+
+        foreach ($product_params as $key => $value) {
+            $str_product_params[] = "{$key}: {$value}";
         }
 
-        return $this;
+        $product_params_str = implode("\n", $str_product_params);
+
+        return $product_params_str;
     }
 
 

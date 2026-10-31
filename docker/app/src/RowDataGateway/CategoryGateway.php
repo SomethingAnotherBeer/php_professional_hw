@@ -12,7 +12,7 @@ class CategoryGateway implements SerialIdInterface
 
     private ClientConnection $clientConnection;
 
-    public int $category_id;
+    public readonly int $category_id;
 
     public string $category_name;
     
@@ -52,26 +52,23 @@ class CategoryGateway implements SerialIdInterface
         $this->product_list = $product_list;
     }
 
-    public function update(array $params): static
+    public function update(): static
     {
         $query_args = [];
-        $binded = [];
+        $category_params =
+        [       
+            'category_name' => $this->category_name,
+        ];
 
-        $sql = "UPDATE categories";
+        $query_args[] = "SET category_name = :category_name";
+        $binded[':category_name'] = $category_params['category_name'];
+        $binded[':category_id'] = $this->category_id;
 
+        $query_args_str = implode(', ', $query_args);
+        $sql = "UPDATE categories $query_args_str WHERE category_id = :category_id";
 
-        if (isset($params['category_name']) && is_string($params['category_name'])) {
-            $query_args[] = "SET :category_name = :category_name";
-            $binded[':category_name'] = $params['category_name'];
-        }
-
-        if (count($query_args) > 0) {
-            $sql.= " " . implode(", ", $query_args) . " WHERE category_id = $this->category_id";
-
-            $stmt = $this->clientConnection->getConnection()->prepare($sql);
-            $stmt->execute($binded);
-            $this->updateGateway($params);
-        }
+        $stmt = $this->clientConnection->getConnection()->prepare($sql);
+        $stmt->execute($binded);
 
         return $this;
 
@@ -96,14 +93,19 @@ class CategoryGateway implements SerialIdInterface
         return static::ID_NAME;
     }
 
-    protected function updateGateway(array $params): static
+    public function __toString(): string
     {
-        if (isset($params['category_name']) && is_string($params['category_name'])) {
-            $this->category_name = $params['category_name'];
-        }
+        $category_params =
+        [
+            'category_id' => $this->category_id,
+            'category_name' => $this->category_name,
+        ];
+        $str_category_params = [];
 
-        return $this;
+        foreach ($category_params as $key => $value) {
+            $str_category_params[] = "{$key}: {$value}";
+        }       
+        $category_params_str = implode("\n", $str_category_params);
+        return $category_params_str;
     }
-
-
 }

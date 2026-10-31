@@ -21,7 +21,7 @@ class ProductFinder
      * @param int $offset
      * @return ProductGateway[] $product_gateway_list
      */
-    public function all(int $limit = 10, int $offset = 0): array
+    public function findAll(int $limit = 10, int $offset = 0): array
     {
         $sql = "SELECT product_id, category_id, product_name, product_price, in_stock FROM products LIMIT :query_limit OFFSET :query_offset";
         $stmt = $this->clientConnection->getConnection()->prepare($sql);
