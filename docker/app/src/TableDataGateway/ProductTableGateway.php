@@ -17,70 +17,71 @@ class ProductTableGateway
         $this->clientConnection = $clientConnection;
     }
 
-    public function all(array $query_params = [], int $limit = 10, int $offset = 0): array
+    public function all(int $limit = 10, int $offset = 0): array
     {
-        $condition_params = $this->getConditionParams($query_params);
-        $sql = "SELECT product_id, category_id, product_name, product_price, in_stock FROM products";
-
-        $binded = [];
-        $condition_list = [];
-
-        if (count($condition_params['binded']) > 0) {
-            $binded = $condition_params['binded'];
-        }
-        if (count($condition_params['condition_list']) > 0) {
-            $condition_list = $condition_params['condition_list'];
-            $condition_list_str = implode(" AND ", $condition_list);
-            $sql.= " WHERE $condition_list_str";
-        }
-
-        $binded[':query_limit'] = $limit;
-        $binded[':query_offset'] = $offset;
-        $sql.= " LIMIT :query_limit OFFSET :query_offset";
+        $sql = "SELECT product_id, category_id, product_name, product_price, in_stock FROM products LIMIT :query_limit, OFFSET :query_offset LIMIT :query_limit OFFSET :query_offset";
 
         $stmt = $this->clientConnection->getConnection()->prepare($sql);
-        $stmt->execute($binded);
+        $stmt->execute([':query_limit' => $limit, ':query_offset' => $offset]);
+
+        $products = $stmt->fetchAll();
+
+        return $products;
+    }
+
+    public function allByCategoryId(int $category_id, int $limit = 10, int $offset = 0): array
+    {
+        $sql = "SELECT p.product_id, p.category_id, p.product_name, p.product_price, p.in_stock FROM products AS p
+            INNER JOIN categories AS c ON p.category_id = c.category_id WHERE c.category_id = :category_id LIMIT :query_limit OFFSET :query_offset";
+
+        $stmt = $this->clientConnection->getConnection()->prepare($sql);
+        $stmt->execute([':category_id' => $category_id, ':query_limit' => $limit, ':query_offset' => $offset]);
+
+        $products = $stmt->fetchAll();
+
+        return $products;
+    }
+
+    /**
+     * @param int[] $product_id_list
+     * @param int $limit
+     * @param int $offset
+     */
+    public function allByProductIdIn(array $product_id_list, int $limit, int $offset): array
+    {
+        $placeholder_list = [];
+        $bind_list = [];
+
+        $product_id_list = array_filter($product_id_list, fn(mixed $product_value) => is_int($product_value));
+        $product_id_list = array_values($product_id_list);
+
+        foreach ($product_id_list as $product_id) {
+            $placeholder = ":product_id_{$product_id}";
+            $placeholder_list[] = $placeholder;
+            $bind_list[$placeholder] = $product_id;
+        }
+
+        $placeholder_list_str = implode(", ", $placeholder_list);
+
+        $sql = "SELECT product_id, category_id, product_name, product_price, in_stock WHERE product_id IN ($placeholder_list_str) LIMIT :query_limit OFFSET :query_offset";
+        $bind_list[':query_limit'] = $limit;
+        $bind_list[':query_offset'] = $offset;
+
+        $stmt = $this->clientConnection->getConnection()->prepare($sql);
+        $stmt->execute($bind_list);
 
         $products = $stmt->fetchAll();
 
         return $products;
 
+
     }
 
-    public function allByCategoryId(int $category_id, array $condition_params = [], int $limit = 10, int $offset = 0): array
+    public function count()
     {
-        $prefix_list =
-        [
-            'category_id' => 'c',
-            'product_name' => 'p',
-            'product_price' => 'p',
-            'in_stock' => 'p',
-        ];
-        $condition_params['category_id'] = $category_id;
-        $condition_params = $this->getConditionParams($condition_params, $prefix_list);
-
-        $sql = "SELECT p.product_id, p.category_id, p.product_name, p.product_price, p.in_stock FROM products AS p 
-        INNER JOIN categories AS c ON p.category_id = c.category_id";
-
-        $binded = $condition_params['binded'];
-
-        $condition_list = $condition_params['condition_list'];
-        $condition_list_str = implode(" AND ", $condition_list);
-        $sql.= " WHERE $condition_list_str";
-
-        $sql.= " LIMIT :query_limit OFFSET :query_offset";
-
-        $binded[':query_limit'] = $limit;
-        $binded[':query_offset'] = $offset;
-
-        $stmt = $this->clientConnection->getConnection()->prepare($sql);
-        $stmt->execute($binded);
-
-        $products = $stmt->fetchAll();
-
-        return $products;
 
     }
+
 
     public function insertMany(array $product_params_list): int
     {
@@ -213,57 +214,6 @@ class ProductTableGateway
         $deleted_count = $stmt->rowCount();
 
         return $deleted_count;
-
-    }
-
-
-
-    protected function getConditionParams(array $condition_params, array $prefix_list = []): array
-    {
-        $binded = [];
-        $condition_arg_list = [];
-
-        $column_list =
-        [
-            'category_id' => 'category_id',
-            'product_name' => 'product_name',
-            'product_price' => 'product_price',
-            'in_stock' => 'in_stock',
-        ];
-
-        foreach ($column_list as $column_key => $column_value) {
-            if (isset($prefix_list[$column_key])) {
-                $column_list[$column_key] = "{$prefix_list[$column_key]}.$column_value";
-            }
-        }
-
-        if (isset($condition_params['category_id']) && is_int($condition_params['category_id'])) {
-            $binded[':category_id'] = $condition_params['category_id'];
-            $condition_arg_list[] = "{$column_list['category_id']} = :category_id";
-        }
-
-        if (isset($condition_params['product_name_eq']) && is_string($condition_params['product_name_eq'])) {
-            $binded[':product_name_eq'] = $condition_params['product_name_eq'];
-            $condition_arg_list[] = "{$column_list['product_name']} = :product_name_eq";
-        }
-        if (isset($condition_params['product_price_lte']) && is_float($condition_params['product_price_lte'])) {
-            $binded[':product_price_lte'] = $condition_params['product_price_lte'];
-            $condition_arg_list[] = "{$column_list['product_price_lte']} <= :product_price_lte";
-        }
-        if (isset($condition_params['product_price_gte']) && is_float($condition_params['product_price_gte'])) {
-            $binded[':product_price_gte'] = $condition_params['product_price_gte'];
-            $condition_arg_list[] = "{$column_list['product_price_gte']} >= :product_price_gte";
-        }
-        if (isset($condition_params['in_stock']) && is_bool($condition_params['in_stock'])) {
-            $binded[':in_stock'] = $condition_params['in_stock'];
-            $condition_arg_list[] = "{$column_list['in_stock']} = :in_stock";
-        }
-
-        return 
-        [
-            'binded' => $binded,
-            'condition_list' => $condition_arg_list,    
-        ];
 
     }
 
