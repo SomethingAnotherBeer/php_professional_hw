@@ -210,12 +210,14 @@ class Product
         $sql = "DELETE FROM products WHERE product_id = :product_id";
         $stmt = $this->clientConnection->getConnection()->prepare($sql);
         $stmt->execute([':product_id' => $this->product_id]);
+        
+        $this->setIsNotExists();
 
         return $this;
     }
 
 
-    protected function setisNotExists(): void
+    protected function setIsNotExists(): void
     {
         $this->isExists = false;
     }
