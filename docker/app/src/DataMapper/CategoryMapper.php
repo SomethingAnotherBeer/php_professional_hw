@@ -160,11 +160,29 @@ class CategoryMapper
             throw new CategoryNotFoundException("Категория не найдена");
         }
 
-        $sql = "DELETE FROM categories WHERE category_id = :category_id";
-        $stmt= $this->clientConnection->getConnection()->prepare($sql);
-        $stmt->execute([':category_id' => $category->getCategoryid()]);
+        $connection = $this->clientConnection->getConnection();
 
-        $category->setDeleted();
+        try {
+            $connection->beginTransaction();
+
+            $product_list = $this->productMapper->allByCategoryId($category->getCategoryId());
+
+            foreach ($product_list as $product) {
+                $this->productMapper->delete($product);
+            }
+
+            $sql = "DELETE FROM categories WHERE category_id = :category_id";
+            $stmt= $this->clientConnection->getConnection()->prepare($sql);
+            $stmt->execute([':category_id' => $category->getCategoryid()]);
+
+            $category->setDeleted();
+
+            $connection->commit();
+        }
+        catch(\Exception $e) {
+            $connection->rollBack();
+            throw $e;
+        }
 
 
 

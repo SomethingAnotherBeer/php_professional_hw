@@ -89,4 +89,20 @@ class Category implements IdentityItemInterface
         $this->product_list = $category->getProductList();
     }
 
+    public function __toString(): string
+    {
+        $category_params =
+        [
+            'category_id' => $this->category_id,
+            'category_name' => $this->category_name,
+        ];
+        $string_category_params = [];
+        foreach ($category_params as $key => $value) {
+            $string_category_params[] = "{$key}: {$value}";
+        }
+
+        return implode("\n", $string_category_params);
+    }
+
+
 }

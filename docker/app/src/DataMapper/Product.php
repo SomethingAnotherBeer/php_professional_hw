@@ -123,5 +123,24 @@ class Product implements IdentityItemInterface
     }
 
 
+    public function __toString(): string
+    {
+        $product_params = 
+        [
+            'product_id' => $this->product_id,
+            'category_id' => $this->category_id,
+            'product_name' => $this->product_name,
+            'product_price' => $this->product_price,
+            'in_stock' => (true === $this->in_stock) ? "true" : "false",
+        ];
+
+        $string_product_params = [];
+        foreach ($product_params as $key => $value) {
+            $string_product_params[] = "{$key}: {$value}";
+        }
+
+        return implode("\n", $string_product_params);
+    }
+
 
 }

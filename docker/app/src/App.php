@@ -2,179 +2,153 @@
 declare(strict_types=1);
 namespace App;
 
-use App\Builder\Http\ResponseBuilder;
-use App\Controller\EventController;
-use App\Exception\BadDataExceptionInterface;
-use App\Exception\Http\BadRequestHttpException;
-use App\Exception\Http\MethodNotAllowedHttpException;
-use App\Exception\Http\NotFoundHttpException;
-use App\Exception\ConflictExceptionInterface;
-use App\Exception\Http\ConflictHttpException;
-use App\Exception\Http\HttpException;
-use App\Exception\NotFoundExceptionInterface;
-use App\Http\Header;
-use App\Http\Response;
-use DI\Container;
+
+use App\Client\ClientConnection;
+use App\Constant\Load;
+use App\DataMapper\CategoryMapper;
+use App\DataMapper\ProductMapper;
+use App\Model\Client\ClientConnectionValue;
 use DI\ContainerBuilder;
-use FastRoute\Dispatcher;
-use FastRoute\RouteCollector;
-
-
-
-use function FastRoute\simpleDispatcher;
+use App\DataMapper\Category;
+use App\DataMapper\Product;
+use App\Exception\Product\ProductNotFoundException;
 
 class App
 {
     public function run(array $params)
     {   
-        $responseBuilder = ResponseBuilder::makeInstance();
 
-        try {
+        try{
+
             $containerBuilder = new ContainerBuilder();
-            $containerBuilder->useAutowiring(true);
-   
+            $containerBuilder->addDefinitions([
+            ClientConnection::class => function() use ($params) {
+                $clientConnectionValue = ClientConnectionValue::makeInstanceFromArray($params);
+                $clientConnection = ClientConnection::makeInstance($clientConnectionValue);
+                return $clientConnection;
+            }
+            ]);
 
             $container = $containerBuilder->build();
-            $dispatcher = simpleDispatcher(function(RouteCollector $r) {
-                $r->addRoute('GET', '/api/v1/event/{event_uid:\d+}', ['controller' => EventController::class, 'action' => 'getEvent',]);
-                $r->addRoute('POST', '/api/v1/event', ['controller' => EventController::class, 'action' => 'createEvent']);
-                $r->addRoute('PATCH', '/api/v1/event/{event_uid:\d+}', ['controller' => EventController::class, 'action' => 'changeEvent']);
-                $r->addRoute('DELETE', '/api/v1/event/{event_uid:\d+}', ['controller' => EventController::class, 'action' => 'removeEvent']);
-                $r->addRoute('POST', '/api/v1/event/get', ['controller' => EventController::class, 'action' => 'getEventsByConditionList']);
-                $r->addRoute('DELETE', '/api/v1/event', ['controller' => EventController::class, 'action' => 'clearEvents']);    
-            });
-            $action_list =
-            [
-                'getEvent' => function(EventController $eventController, array $args = []): Response {
-                    $event_uid = $args['event_uid'];
-                    return $eventController->getEvent($event_uid);
-                },
-                'createEvent' => function(EventController $eventController, array $args = []): Response {
-                    $request_data = $this->prepareData($this->getRequestData());
-                    return $eventController->createEvent($request_data);
-                },
-                'changeEvent' => function(EventController $eventController, array $args = []): Response {
-                    $request_data = $this->prepareData($this->getRequestData());
-                    $event_uid = $args['event_uid'];
-                    return $eventController->changeEvent($event_uid, $request_data);
-                },
-                'removeEvent' => function(EventController $eventController, array $args = []): Response {
-                    $event_uid = $args['event_uid'];
-                    return $eventController->removeEvent($event_uid);
-                },
-                'getEventsByConditionList' => function(EventController $eventController, array $args = []): Response {
-                    $request_data = $this->prepareData($this->getRequestData());
-                    return $eventController->getEventsByConditionList($request_data);
-                },
-                'clearEvents' => function(EventController $eventController, array $args = []): Response {
-                    return $eventController->clearEvents();
-                },
-            ];
 
-            $http_method = $_SERVER['REQUEST_METHOD'];
-            $uri = $_SERVER['REQUEST_URI'];
+            $categoryMapper = $container->get(CategoryMapper::class);
+            $productMapper = $container->get(ProductMapper::class);
 
-            if (false !== $pos = strpos($uri, '?')) {
-                $uri = substr($uri, 0, $pos);
+            $clientConnection = $container->get(ClientConnection::class);
+
+
+            /** @var Category[] $category_list */
+            $category_list = [];
+
+            /** @var Product[] $product_list */
+            $product_list = [];
+
+            try {
+                $clientConnection->getConnection()->beginTransaction();
+
+                for ($i = 0; $i < 10; $i++) {
+                    $category_name = "category_name " . $i + 1;
+                    $category_list[] = $categoryMapper->create($category_name);
+                }
+
+                foreach ($category_list as $category) {
+                    for ($i = 0; $i < 5; $i++) {
+                        $category_id = $category->getCategoryId();
+                        $product_name =  "product_name" . $i + $category->getCategoryId();
+                        $product_price = (float)rand(1000, 5000);
+                        $in_stock = $i % 2 === 0 && $i !== 0 ? true : false;
+
+                        $product_list[] = $productMapper->create($category_id, $product_name, $product_price, $in_stock);
+
+                    }
+                }
+
+                $clientConnection->getConnection()->commit();
             }
-            $uri = rawurldecode($uri);
+            catch (\Exception $e) {
+                $clientConnection->getConnection()->rollBack();
+                throw $e;
+            }
 
-            $route_info = $dispatcher->dispatch($http_method, $uri);
+            echo "Список категорий\n";
+            array_walk($category_list, function(Category $category) {echo $category;});
 
-            switch($route_info[0]) {
-                case Dispatcher::NOT_FOUND:
-                    throw new NotFoundHttpException("Путь $uri не найден");                    
-                break;
+            echo "Список продуктов\n";
+            array_walk($product_list, function(Product $product) {echo $product;});
 
-                case Dispatcher::METHOD_NOT_ALLOWED:
-                    $allowed_methods_str = implode(", ", $route_info[1]);
-                    throw new MethodNotAllowedHttpException("Данный путь поддерживает только следующие методы: $allowed_methods_str");
-                break;
+            $category = array_find($category_list, fn(Category $category) => "category_name 7" === $category->getCategoryId());
 
-                case Dispatcher::FOUND:
-                    $controller_params = $route_info[1];
-                    $args = $route_info[2];
+            var_dump($category->getProductList());
 
-                    $controller_class = $controller_params['controller'];
-                    $action = $controller_params['action'];
+            $category_list_two = $categoryMapper->all(Load::EAGER);
 
-                    $controller = $container->get($controller_class);
-                    
-                    /** @var Response $response */
-                    $response = $action_list[$action]($controller, $args);
+            $fromSecondCategory = array_find($category_list_two, fn(Category $category) => "category_name 7" === $category->getCategoryId());
 
-                    $response->pushHeader(Header::makeInstance('Content-Type', 'application/json'));
-                    $response->send();
-                    
-                break;
+            if ($category !== $fromSecondCategory) {
+                throw new \Exception("Ссылки категорий указывают на разные объекты, что-то не так с реализацией DataMapper");
             }
 
 
+            $category->setCategoryName("category_name 77");
 
-        }
-        catch(\Exception $e) {
+            if (!$fromSecondCategory->getCategoryName() !== "category_name 77") {
+                throw new \Exception("Ошибка в строке 93");
+            }
 
-            $exception_interface_list = 
-            [
-                NotFoundExceptionInterface::class => NotFoundHttpException::class,
-                BadDataExceptionInterface::class => BadRequestHttpException::class,
-                ConflictExceptionInterface::class => ConflictHttpException::class,
-            ];
+            var_dump($category->getProductList());
 
-            $current_exception_interface_list = class_implements($e);
+            $second_product_list = $productMapper->all();
+
+            $productFromFirstList = array_find($product_list, fn(Product $product) => "product_name 7" === $product->getProductName());
+            $productFromSecondList = array_find($second_product_list, fn(Product $product) => "product_name 7" === $product->getProductName());
+
+            if ($productFromFirstList !== $productFromSecondList) {
+                throw new \Exception("Ссылки продуктов указывают на разные объекты, что-то не так с реализацией DataMapper");
+            }
+
+            $categoryMapper->update($category);
+            $productMapper->update($productFromFirstList);
+
+            $productMapper->delete($productFromFirstList);
+
+            try {
+                $productMapper->update($productFromFirstList);
+            }
+            catch(ProductNotFoundException $e) {
+                echo $e->getMessage() . "\n";
+            }
+
+            $currentCategory = array_find($category_list, fn(Category $category) => $category->getCategoryName() === "category_name 1");
+
+            $categoryMapper->delete($currentCategory);
             
-            $targetException = $e;
+            $product_list_by_deleted_category = array_filter($product_list, fn(Product $product) => $product->getCategoryId() === $currentCategory->getCategoryId());
+            $exception_message_list = [];
 
-            foreach ($exception_interface_list as $interface_name => $exception_class) {
-                if (isset($current_exception_interface_list[$interface_name])) {
-                    $targetException = new $exception_class($e->getMessage());
-                    break;
+            try {
+                foreach ($product_list_by_deleted_category as $deletedProduct) {
+                    $productMapper->delete($deletedProduct);
                 }
             }
-            
-            if ($targetException instanceof HttpException) {
-                $responseBuilder->setStatusCode($targetException->getStatusCode());
+            catch(ProductNotFoundException $e) {
+                $exception_message_list[] = $e->getMessage();
             }
-            else {
-                $responseBuilder->setStatusCode(500);
-            }
-            
-            $responseBuilder->addHeaders(['Content-Type' => 'application/json']);
-            $responseBuilder->asJson(['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            
-            $response = $responseBuilder->getResponse();
 
-            $response->send();
+            $exception_message_list_str = implode("\n", $exception_message_list);
+            echo $exception_message_list_str;
 
+            echo "Выполнение успешно завершено\n";
+
+            return 0;
         }
 
-
-    }
-
-    
-
-    protected function prepareData(array $data): array
-    {
-        $prepared_data = [];
-        foreach ($data as $key => $value) {
-            if (is_array($value)) {
-                $prepared_data[$key] = $this->prepareData($value);
-            }
-            else if (is_string($value)) {
-                $prepared_data[$key] = trim(htmlspecialchars($value));
-            }
-            else {
-                $prepared_data[$key] = $value;
-            }
+        catch(\Exception $e) {
+            echo $e->getMessage() . "\n";
+            echo "Ошибка выполнения\n";
+            return 1;
         }
 
-        return $prepared_data;
-    }
-
-    protected function getRequestData(): array
-    {
-        $request_data = file_get_contents('php://input');
-        return json_decode($request_data, true);
+        
     }
 
 }
