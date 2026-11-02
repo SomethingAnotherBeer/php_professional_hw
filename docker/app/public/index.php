@@ -58,7 +58,7 @@ $current['client'] = [];
 foreach ($client_params[$current_client] as $client_param_key => $client_param_prepare) {
     $current['client'][$client_param_key] =  $client_param_prepare($_ENV[$client_param_key]);
 }
-//$current['client'] = array_filter($current, fn(string|false $param) => false !== $param);
+
 $current['client_mode'] = $current_client;
 
 
