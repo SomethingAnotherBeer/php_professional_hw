@@ -2,14 +2,12 @@
 declare(strict_types=1);
 namespace App\Client;
 
-use App\Interface\SerialIdInterface;
 use App\Model\Client\ClientConnectionValue;
 use PDO;
-use PDOStatement;
 
 class ClientConnection
 {
-    private static ?ClientConnection $clientConnection;
+    private static ?ClientConnection $clientConnection = null;
 
     private PDO $pdo;
 

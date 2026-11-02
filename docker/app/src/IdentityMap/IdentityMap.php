@@ -32,7 +32,7 @@ class IdentityMap
         $key = $this->extractKey($item);
 
         if ($this->has($key)) {
-            if (method_exists('replace', $this->storage[$key])) {
+            if (method_exists($this->storage[$key], 'replace')) {
                 $this->storage[$key]->replace($item);
             }
         }

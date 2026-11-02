@@ -35,7 +35,7 @@ class ProductMapper
             ':category_id' => $category_id,
             ':product_name' => $product_name,
             ':product_price' => $product_price,
-            ':in_stock' => $in_stock
+            ':in_stock' => (int)$in_stock
         ];
 
         $stmt = $this->clientConnection->getConnection()->prepare($sql);
@@ -76,7 +76,7 @@ class ProductMapper
                 (float)$product_params['product_price'],
                 (bool)$product_params['in_stock']);
 
-                $identifier = static::class . ':' . $product->getProductId();
+                $identifier = Product::class . ':' . $product->getProductId();
                 $this->identityMap->set($product);
 
                 $product_list[] = $this->identityMap->get($identifier);
@@ -94,7 +94,7 @@ class ProductMapper
      */
     public function allByCategoryId(int $category_id): array
     {
-        $sql = "SELECT product_id, category_id, product_name, product_price, in_stock FROM products WHERE category_id = :category_id LIMIT :limit OFFSET :offset";
+        $sql = "SELECT product_id, category_id, product_name, product_price, in_stock FROM products WHERE category_id = :category_id";
         $stmt = $this->clientConnection->getConnection()->prepare($sql);
         $stmt->execute([':category_id' => $category_id]);
 
@@ -112,7 +112,7 @@ class ProductMapper
                 (float)$product_params['product_price'],
                 (bool)$product_params['in_stock']);
 
-                $identifier = static::class . ':' . $product->getProductId();
+                $identifier = Product::class . ':' . $product->getProductId();
                 $this->identityMap->set($product);
 
                 $product_list[] = $this->identityMap->get($identifier);
@@ -129,7 +129,7 @@ class ProductMapper
      */
     public function allByCategoryIdIn(array $category_id_list): array
     {
-        $placeholder_list_str = str_repeat('?', count($category_id_list) - 1) . '?';
+        $placeholder_list_str = implode(', ', array_fill(0, count($category_id_list), '?'));
         $category_id_list = array_values($category_id_list);
 
         $sql = "SELECT product_id, category_id, product_name, product_price, in_stock FROM products WHERE category_id IN ($placeholder_list_str)";
@@ -150,9 +150,8 @@ class ProductMapper
                 (float)$product_params['product_price'],
                 (bool)$product_params['in_stock']);
 
-                $identifier = static::class . ':' . $product->getProductId();
+                $identifier = Product::class . ':' . $product->getProductId();
                 $this->identityMap->set($product);
-                
                 $product_list[] = $this->identityMap->get($identifier);
             }
         }
@@ -164,7 +163,7 @@ class ProductMapper
 
     public function update(Product $product): Product
     {
-        $identifier = static::class . ':' . $product->getProductId();
+        $identifier = Product::class . ':' . $product->getProductId();
 
         if (!$this->identityMap->has($identifier)) {
             throw new UndefiendEntityException("Неизвестная сущность продукта");
@@ -180,7 +179,7 @@ class ProductMapper
             ':product_id' => $product->getProductId(),
             ':product_name' => $product->getProductName(),
             ':product_price' => $product->getProductPrice(),
-            ':in_stock' => $product->isInStock(),
+            ':in_stock' => (int)$product->isInStock(),
         ];
 
         $stmt = $this->clientConnection->getConnection()->prepare($sql);
@@ -195,7 +194,7 @@ class ProductMapper
 
     public function delete(Product $product): static
     {
-        $identifier = static::class . ':' . $product->getProductId();
+        $identifier = Product::class . ':' . $product->getProductId();
 
         if (!$this->identityMap->has($identifier)) {
             throw new UndefiendEntityException("Неизвестная сущность продукта");
@@ -209,6 +208,8 @@ class ProductMapper
         $stmt = $this->clientConnection->getConnection()->prepare($sql);
         $stmt->execute([':product_id' => $product->getProductId()]);
     
+        $product->setDeleted();
+
         return $this;
     }
 

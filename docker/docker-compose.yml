@@ -10,6 +10,9 @@ services:
       - ./.env:/env/.env
     expose:
       - "9000"
+      
+    stdin_open: true
+    tty: true
     networks:
       - application_network
 

@@ -10,8 +10,8 @@ use App\IdentityMap\IdentityMap;
 
 class CategoryMapper
 {
-    public const TABLE_NAME = "products";
-    public const ID_NAME = "product_id";
+    public const TABLE_NAME = "categories";
+    public const ID_NAME = "category_id";
 
     private ClientConnection $clientConnection;
     
@@ -61,7 +61,7 @@ class CategoryMapper
         }
 
         foreach ($category_params_by_id_list as $category_params) {
-            $identifier = static::class . ":" . $category_params['category_id'];
+            $identifier = Category::class . ":" . $category_params['category_id'];
             $this->identityMap->set(Category::makeInstance((int)$category_params['category_id'], $category_params['category_name'], $category_params['product_list']));
 
             $category_list[] = $this->identityMap->get($identifier);
@@ -77,7 +77,7 @@ class CategoryMapper
     public function findById(int $category_id, int $load = Load::LAZY): ?Category
     {
         $category = null;
-        $identifier = static::class . ":" . $category_id;
+        $identifier = Category::class . ":" . $category_id;
 
         if ($this->identityMap->has($identifier)) {
             $category = $this->identityMap->get($identifier);
@@ -125,7 +125,7 @@ class CategoryMapper
 
     public function update(Category $category): Category
     {
-        $identifier = static::class . ':' . $category->getCategoryId();
+        $identifier = Category::class . ':' . $category->getCategoryId();
         
         if (!$this->identityMap->has($identifier)) {
             throw new UndefiendEntityException("Неизвестная сущность категории");
@@ -150,7 +150,7 @@ class CategoryMapper
 
     public function delete(Category $category): Category
     {
-        $identifier = static::class . ":" . $category->getCategoryId();
+        $identifier = Category::class . ":" . $category->getCategoryId();
 
         if (!$this->identityMap->has($identifier)) {
             throw new UndefiendEntityException("Неизвестная сущность категории");
@@ -166,8 +166,9 @@ class CategoryMapper
             $connection->beginTransaction();
 
             $product_list = $this->productMapper->allByCategoryId($category->getCategoryId());
-
+            
             foreach ($product_list as $product) {
+                
                 $this->productMapper->delete($product);
             }
 
@@ -176,7 +177,7 @@ class CategoryMapper
             $stmt->execute([':category_id' => $category->getCategoryid()]);
 
             $category->setDeleted();
-
+            
             $connection->commit();
         }
         catch(\Exception $e) {
@@ -184,7 +185,7 @@ class CategoryMapper
             throw $e;
         }
 
-
+        $category->setDeleted();
 
         return $category;
     }
