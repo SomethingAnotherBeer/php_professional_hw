@@ -26,12 +26,6 @@ function smallerNumberThanCurrent(array $nums)
         }
 
         $prepared[$inner_nums[$i]]['greater_than_count'] = $greater_than_count;
-        if (isset($prepared[$inner_nums[$i]]['repeat_count'])) {
-            $prepared[$inner_nums[$i]]['repeat_count']+=1;
-        }
-        else {
-            $prepared[$inner_nums[$i]]['repeat_count'] = 1;
-        }
         
     }
     
