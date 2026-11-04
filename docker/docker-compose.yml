@@ -1,0 +1,109 @@
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: nginx
+    container_name: "nginx"
+    volumes:
+      - ./app:/var/www/app
+
+    ports:
+      - '80:80'
+    depends_on:
+      - app
+    networks:
+      - application_network
+    
+  app:
+    build:
+      context: ./fpm
+      dockerfile: Dockerfile
+    image: app
+    container_name: "app"
+    volumes:
+      - ./app:/var/www/app
+      - ./.env:/env/.env
+      - ./.env.testing:/env_test/.env
+    expose:
+      - "9000"
+    environment:
+      - APP_ENV=testing
+   
+    networks:
+      - application_network
+
+  redis:
+    image: redis:8-alpine
+    container_name: "redis_container"
+    expose:
+      - "6379"
+    networks:
+      - application_network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.5.2 
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - application_network
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    expose:
+      - "27017"
+    networks:
+      - application_network
+    
+
+  elastic-init:
+    image: curlimages/curl:8.7.1
+    container_name: elastic-init
+    user: root
+    environment:
+      - ELASTIC_URL=${ELASTIC_HOST}
+      - ELASTIC_INDEX=${ELASTIC_INDEX}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    volumes:
+      - ./init_data/elastic_index_create.json:/data/elastic_index_create.json
+    networks:
+      - application_network
+    depends_on:
+      - elasticsearch
+    entrypoint: >
+      sh -c "
+        echo 'Начало';
+        until [ \"\$(curl -s -o /dev/null -w '%{http_code}' -u elastic:$${ELASTIC_PASSWORD} $${ELASTIC_URL}/_cluster/health)\" = \"200\" ]; do
+          printf '.';
+          sleep 2;
+        done;
+        ls -la /data;
+        curl  -u elastic:$${ELASTIC_PASSWORD} -X PUT $${ELASTIC_URL}/$${ELASTIC_INDEX} -H 'Content-Type: application/json' --data-binary @/data/elastic_index_create.json
+        echo '\nИмпорт завершен!';
+      "
+
+
+volumes:
+  es_data:
+    driver: local
+
+networks:
+  application_network:
+    driver: bridge

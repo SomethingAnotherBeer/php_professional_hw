@@ -1,0 +1,219 @@
+openapi: 3.0.4
+info:
+  title: events_service
+  version: 1.0.0
+tags:
+  - name: event
+
+paths:
+  /event:
+    post:
+      tags:
+        - event
+      summary: create event
+      description: create event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/event'
+        required: true
+      responses:
+        '201':
+          description: 'event is created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/event'
+        '400':
+          description: 'invalid request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '409':
+          description: 'event with this uid already exists'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  
+    delete:
+      tags:
+        - event
+      summary: clear events
+      description: clear events
+      responses:
+        '200':
+          description: all events is deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  
+
+  /event/get:
+    post:
+      tags:
+        - event
+      summary: get events by condition list
+      description: get events by condition list
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/event_condition_list'
+        required: true
+      responses:
+        '200':
+          description: event list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/event_list'
+  
+  /event/{event_uid}:
+    patch:
+      tags:
+        - event
+      summary: change event
+      description: change event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/change_event'
+        required: false
+      responses:
+        '200':
+          description: event is changed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/event'
+        '400':
+          description: bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags:
+        - event
+      summary: get event by uid
+      description: get event by uid
+      responses:
+        '200':
+          description: founded event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/event'
+        '404':
+          description: event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - event
+      summary: delete event by uid
+      description: delete event by uid
+      responses:
+        '200':
+          description: event successfully deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/event'
+        '404':
+          description: event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    event:
+      type: object
+      required:
+        - event_uid
+        - event_priority
+        - event_condition_list
+        - event_value_list
+      properties:
+        event_uid:
+          type: string
+          example: '1221eew'
+        event_priority:
+          type: integer
+          example: 25
+        event_condition_list:
+          $ref: '#/components/schemas/event_condition_list'
+        event_value_list:
+          $ref: '#/components/schemas/event_condition_list'
+    
+    change_event:
+      type: object
+      required:
+        - event_uid
+      properties:
+        event_uid:
+          type: string
+          example: '1221eew'
+        event_priority:
+          type: integer
+          example: 25
+        event_condition_list:
+          $ref: '#/components/schemas/event_condition_list'
+        event_value_list:
+          $ref: '#/components/schemas/event_value_list'
+
+    event_condition_list:
+      type: array
+      items:
+        type: object
+        description: Объект ключ-значение с произвольным наименованием строкового ключа и значением, могущим быть следующего типа - string, integer, boolean
+        example: {"key::string": value::string|integer|boolean}
+
+    event_value_list:
+      type: array
+      items:
+        type: object
+        description: Объект ключ-значение с произвольным наименованием строкового ключа и значением, могущим быть следующего типа - string, integer, boolean
+        example: {"key::string": value::string|integer|boolean}
+        
+    event_list:
+      type: array
+      items:
+        $ref: '#/components/schemas/event'
+    
+    MessageResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: 'success!'
+    
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: "error occurred!"
+
+    
+        

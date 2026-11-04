@@ -1,0 +1,14 @@
+{
+	"event_uid": "111",
+	"event_priority": 20,
+	"event_condition_list": {
+		"one": 111,
+		"two": true,
+		"three": "222"
+	},
+	"event_value_list": {
+		"one": 111,
+		"two": true,
+		"three": "444"
+	}
+}

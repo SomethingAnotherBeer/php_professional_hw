@@ -1,0 +1,46 @@
+{
+    "mappings": {
+        "properties": {
+            "event_uid": {
+                "type": "keyword"
+            },
+            "event_priority": {
+                "type": "integer"
+            },
+            "event_condition_list_count": {
+                "type": "integer"
+            },
+            "event_condition_list": {
+                "type": "nested",
+                "properties": {
+                    "key": {
+                        "type": "keyword"
+                    },
+                    "value": {
+                        "type": "keyword"
+                    },
+                    "type": {
+                        "type": "keyword"
+                    }
+                }            
+            },
+            "event_value_list_count": {
+                "type": "integer"
+            },
+            "event_value_list": {
+                "type": "nested",
+                "properties": {
+                    "key": {
+                        "type": "keyword"
+                    },
+                    "value": {
+                        "type": "keyword"
+                    },
+                    "type": {
+                        "type": "keyword"
+                    }
+                }
+            }
+        }
+    }
+}
