@@ -24,8 +24,11 @@ services:
     volumes:
       - ./app:/var/www/app
       - ./.env:/env/.env
+      - ./.env.testing:/env_test/.env
     expose:
       - "9000"
+    environment:
+      - APP_ENV=testing
    
     networks:
       - application_network

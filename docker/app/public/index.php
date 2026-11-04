@@ -7,8 +7,17 @@ use Dotenv\Dotenv;
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/App.php';
 
-$dotenv = Dotenv::createImmutable('/env');
-$dotenv->load();
+
+$envMode = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? 'dev');
+
+if ('testing' === $envMode) {
+    $dotenv = Dotenv::createImmutable('/env_test');
+    $dotenv->load();
+}
+else {
+    $dotenv = Dotenv::createImmutable('/env');
+    $dotenv->load();
+}
 
 
 $available_clients =
