@@ -33,8 +33,11 @@ function frequencySort(array $nums)
             if ($count_nums[$a] > $count_nums[$b]) {
                 return -1;
             }
-            else {
+            else if ($count_nums[$a] < $count_nums[$b]) {
                 return 1;
+            }
+            else {
+                return 0;
             }
         }
        
