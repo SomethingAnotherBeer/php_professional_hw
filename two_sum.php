@@ -6,53 +6,78 @@ declare(strict_types=1);
 /**
  * @param int[] $nums
  * @param int $target
+ * @return int[]
  */
-function getIndicies(array $nums, int $target): array
+function getIndicies(array $nums, int $target)
 {
     $nums_by_values = [];
-    foreach ($nums as $index => $num ) {
-        $nums_by_values[$num]['num'][] = $num;
-        $nums_by_values[$num]['index'][] = $index;
-    }
     $indicies = [];
-    
-    foreach ($nums_by_values as $num => $params) {
-        if (count($params['num']) > 1 && $params['num'][0] + $params['num'][1] === $target) {
-            $indicies = $params['index'];
-            break;
-        } 
 
-        if (isset($nums_by_values[$target - $params['num'][0]])) {
-            $indicies =
+    $is_finded = false;
+    foreach ($nums as $index => $num) {
+        if (isset($nums_by_values[$target - $num]) && $nums_by_values[$target - $num] !== $index) {
+            $indicies = 
             [
-                $nums_by_values[$target - $params['num'][0]]['index'][0],
-                $params['index'][0],
-            ];
-        }
-    }
+                $nums_by_values[$target - $num],
+                $index,
 
+            ];
+            $is_finded = true;
+            
+        }
+
+        if ($is_finded) {
+            break;
+        }
+
+        $nums_by_values[$num] = $index;
+
+
+    }
 
     return $indicies;
+
+
+}
+
+function assertTest(array $expected, array $actual): void
+{
+    $intersection = array_intersect($actual, $expected);
+    if (count($intersection) !== count($expected)) {
+        $expected_msg = implode(', ', $expected);
+        $actual_msg = implode(', ', $actual);
+        throw new \Exception("expected: $expected_msg\nactual: $actual_msg");
+    }
 
 }
 
 
-$nums = [2,7,11,15]; 
-$target = 9;
-
-$indicies = getIndicies($nums, $target);
-print_r($indicies);
 
 
-$nums = [3,2,4];
-$target = 6;
+try {
+    $nums = [2,7,11,15]; 
+    $target = 9;
+    assertTest([0, 1], getIndicies($nums, $target));
 
-$indicies = getIndicies($nums, $target);
-print_r($indicies);
+
+    $nums = [3,2,4];
+    $target = 6;
+    assertTest([1,2], getIndicies($nums, $target));
+    
 
 
-$nums = [3,3];
-$target = 6;
+    $nums = [3,3];
+    $target = 6;
+    assertTest([0, 1], getIndicies($nums, $target));
+    
 
-$indicies = getIndicies($nums, $target);
-print_r($indicies);
+    $nums = [2, 4, 3];
+    $target = 6;
+    assertTest([0, 1], getIndicies($nums, $target));
+
+    echo "All tests successfull!!!\n";
+
+}
+catch(\Exception $e) {
+    echo $e->getMessage();
+}
