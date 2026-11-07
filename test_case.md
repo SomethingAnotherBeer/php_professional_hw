@@ -337,23 +337,21 @@
         2.1.a) Успешная оплата
         
         мок PaymentWorker::sendToRefund(string $payment_transcation_id): bool -> true
-        мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
-        мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> false
+        мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
         мок PaymentRepository::checkPaidOrderIsExists(string $order_number): bool -> false
         мок PaymentRepository::checkSumIsValidForOrderNumber(string $order_number, float $sum): bool -> true
         мок PaymentRepository::setOrderIsPaid(string $order_number): bool -> true
         мок PaymentService::sendPayment(string $encoded_payment_params): string -> "{"processing":true, "transcation_id": "transcation_id", "code": 200}"
 
-        2.1.b) PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentProcessingStorage::setOrderByNumber($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($oder_number, $sum) ->  -> PaymentService::sendPayment($encoded_payment_params) -> PaymentRepository::setOrderIsPaid($order_number) -> PaymentProcessingStorage::removeOrderByNumber($order_number)
+        2.1.b) PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($oder_number, $sum) ->  -> PaymentService::sendPayment($encoded_payment_params) -> PaymentRepository::setOrderIsPaid($order_number) -> PaymentProcessingStorage::removeOrderByNumber($order_number)
 
         2.2.c) Возврат ответа с сообщением "Оплата прошла успешно"  и кодом 200 
 
         2.2.a) Невалидные реквизиты
         
         мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
-        мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
-        мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> false
+        мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
         мок PaymentRepository::checkPaidOrderIsExists(string $order_number): bool -> false
         мок PaymentRepository::checkSumIsValidForOrderNumber(string $order_number, float $sum): bool -> true
@@ -361,52 +359,49 @@
         мок PaymentService::sendPayment(string $encoded_payment_params): string -> "{"processing":false, "transcation_id": "transcation_id", "code": 403}"
 
 
-        2.2.b) Вызов PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentProcessingStorage::setOrderByNumber($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number, $sum) -> PaymentService::sendPayment($encoded_payment_params) -> выброс исключения InvalidPaymentCredentialsException -> PaymentProcessingStorage::removeOrderByNumber($order_number)
+        2.2.b) PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number, $sum) -> PaymentService::sendPayment($encoded_payment_params) -> выброс исключения InvalidPaymentCredentialsException -> PaymentProcessingStorage::removeOrderByNumber($order_number)
 
         2.2.c) Возврат ответа с сообщением "Не удалось списать данные с карты, проверьте реквизиты" и кодом 403
 
         2.3.a) Оплаченный заказ уже существует в системе
 
         мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
-        мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
-        мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> false
+        мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
         мок PaymentRepository::checkPaidOrderIsExists(string $order_number): bool -> true
         мок PaymentRepository::checkSumIsValidForOrderNumber(string $order_number, float $sum): bool -> true
         мок PaymentRepository::setOrderIsPaid(string $order_number): bool -> true
         мок PaymentService::sendPayment(string $encoded_payment_params): string -> "{"processing":true, "transcation_id": "transcation_id", "code": 200}"
         
-        2.3.b) Вызов PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentProcessingStorage::setOrderByNumber($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> выброс исключения PaidOrderAlreadyExistsException -> PaymentProcessingStorage::removeOrderByNumber($order_number)
+        2.3.b) Вызов PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> выброс исключения PaidOrderAlreadyExistsException -> PaymentProcessingStorage::removeOrderByNumber($order_number)
         
         2.3.c) Возврат ответа с сообщением "Оплаченный заказ уже существует в системе" и кодом 409
 
         2.4.a) Сумма платежа несоответствует номеру заказа
 
         мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
-        мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
-        мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> false
+        мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
         мок PaymentRepository::checkPaidOrderIsExists(string $order_number): bool -> false
         мок PaymentRepository::checkSumIsValidForOrderNumber(string $order_number, float $sum): bool -> false
         мок PaymentRepository::setOrderIsPaid(string $order_number): bool -> true
         мок PaymentService::sendPayment(string $encoded_payment_params): string -> "{"processing":true, "transcation_id": "transcation_id", "code": 200}"
         
-        2.4.b) Вызов PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentProcessingStorage::setOrderByNumber($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository->checkSumIsValidForOrderNumber($order_number) -> выброс исключения PaymentSumInconsistenceForOrder -> PaymentProcessingStorage::removeOrderByNumber($order_number)
+        2.4.b) Вызов PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository->checkSumIsValidForOrderNumber($order_number) -> выброс исключения PaymentSumInconsistenceForOrder -> PaymentProcessingStorage::removeOrderByNumber($order_number)
 
         2.4.c) Возврат сообщения об ошибке "Сумма платежа несоответствует номеру заказа" с кодом 409
 
         2.5.a) Заказ с таким номером уже проходит обработку в системе
         
         мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
-        мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
-        мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> true
+        мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> false
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
         мок PaymentRepository::checkPaidOrderIsExists(string $order_number): bool -> false
         мок PaymentRepository::checkSumIsValidForOrderNumber(string $order_number, float $sum): bool -> true
         мок PaymentRepository::setOrderIsPaid(string $order_number): bool -> true
         мок PaymentService::sendPayment(string $encoded_payment_params): string -> "{"processing":true, "transcation_id": "transcation_id", "code": 200}"
     
-        2.5.b) Вызов PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentProcessingStorage::setOrderByNumber($order_number) -> Выброс исключения OrderAlreadyProcessingException -> PaymentProcessingStorage::removeOrderByNumber($order_number)
+        2.5.b) Вызов PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) -> Выброс исключения OrderAlreadyProcessingException -> PaymentProcessingStorage::removeOrderByNumber($order_number)
 
         2.5.c) Возврат сообщения "Данный заказ уже проходит обработку в системе" с кодом 409
 
@@ -494,7 +489,7 @@
 
 ## back - repository
 
-    Окружение - В рамках связки бэк - репозиторий предполагается наличие асинхронного воркера, который будет обрабатывать платежи, оплата за которые прошла, но потом возникла ошибка на бэке - далее рассматривается единственный кейс такой ошибки, а именно - ошибка бд при записи оплаченного заказа. Данный воркер должен будет передавать в платежный сервис A идентификатор платежной транзакции со статусом refund для перевода денег обратно клиенту. Конкретно в рамках данного кейса мы тестируем связку бэк - репозиторий, и соответственно, будем мокать данный воркер. Так же для предотвращения повторной обработки неоплаченного платежа, предусмотрено сервис к in memory хранилищу PaymentProcessingStorage с методами PaymentProcessingStorage::checkOrderByNumber(string $order_number), PaymentProcessingStorage::setOrderByNumber(string $order_number), PaymentProcessingStorage::removeOrderByNumber(string $order_number). Методы PaymentProce
+    Окружение - В рамках связки бэк - репозиторий предполагается наличие асинхронного воркера, который будет обрабатывать платежи, оплата за которые прошла, но потом возникла ошибка на бэке - далее рассматривается единственный кейс такой ошибки, а именно - ошибка бд при записи оплаченного заказа. Данный воркер должен будет передавать в платежный сервис A идентификатор платежной транзакции со статусом refund для перевода денег обратно клиенту. Конкретно в рамках данного кейса мы тестируем связку бэк - репозиторий, и соответственно, будем мокать данный воркер. Так же для предотвращения повторной обработки неоплаченного платежа, предусмотрено сервис к in memory хранилищу PaymentProcessingStorage с методами PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number), PaymentProcessingStorage::removeOrderByNumber(string $order_number). Методы PaymentProce
 
     В репозитории должны быть следующие методы: 
 
@@ -515,61 +510,55 @@
     DatabaseConnection->осуществляет соединение с тестовой базой данных           
  
     Предполагаемая успешная цепочка выполнения оплаты заказа: 
-    PaymentProcessingStorage::checkOrderByNumber($order_number), PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number, $sum) -> PaymentProcessingStorage::setOrderByNumber(string $order_number) -> PaymentService::sendPayment($encoded_payment_params) -> PaymentRepository::setOrderIsPaid($order_number) -> PaymentProcessingStorage::removeOrderByNumber($order_number)
+    PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number, $sum) -> PaymentService::sendPayment($encoded_payment_params) -> PaymentRepository::setOrderIsPaid($order_number) -> PaymentProcessingStorage::removeOrderByNumber($order_number)
 
     1)Оплаченный заказ существует в системе
-    Мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> false
-    Мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
+    Мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
     Мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
     Мок PaymentService
     Мок PaymentWorker
     
 
-    Вызов PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentProcessingStorage::setOrderByNumber($order_number) ->  PaymentRepository::checkPaidOrderIsExists($oder_number) -> выброс исключения PaidOrderAlreadyExists -> PaymentProcessingStorage::removeOrderByNumber($order_number) -> возврат ответа "Данный заказ уже существует в системе" с кодом 409
+    Вызов PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) ->  PaymentRepository::checkPaidOrderIsExists($oder_number) -> выброс исключения PaidOrderAlreadyExists -> PaymentProcessingStorage::removeOrderByNumber($order_number) -> возврат ответа "Данный заказ уже существует в системе" с кодом 409
 
     2) Ошибка соединения с базой данных/инконсистентности вводимых плейсохолдеров к кл-ву параметров и прочее в методе checkPaidOrderIsExists:
-    Мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> false
+    Мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
     Мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
-    Мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
     Мок PaymentService
     Мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
 
-    Вызов PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentProcessingStorage::setOrderByNumber($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> исключение ServerException -> исключение ServerException -> PaymentProcessingStorage::removeOrderByNumber($order_number) -> возврат ответа "Ошибка сервиса, ведется работа над устранением" с кодом 500
+    Вызов PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> исключение ServerException -> исключение ServerException -> PaymentProcessingStorage::removeOrderByNumber($order_number) -> возврат ответа "Ошибка сервиса, ведется работа над устранением" с кодом 500
 
 
     3) Сумма заказа несоответствует номеру заказа в методе checkSumIsValidForOrderNumber
-    Мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> false
-    Мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
+    Мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
     Мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
 
-    Вызов PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentProcessingStorage::setOrderByNumber($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number) -> возврат false, исключение SumInconsistenceForOrderNumber -> PaymentProcessingStorage::removeOrderByNumber($order_number) -> возврат ответа "сумма заказа несоответствует номеру заказа" с кодом 409
+    Вызов PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number) -> возврат false, исключение SumInconsistenceForOrderNumber -> PaymentProcessingStorage::removeOrderByNumber($order_number) -> возврат ответа "сумма заказа несоответствует номеру заказа" с кодом 409
 
     4) Ошибка соединения с базой данных/инконсистентности вводимых плейсохолдеров к кл-ву параметров и прочее в методе в методе checkSumIsValidForOrderNumber
-    Мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> false
-    Мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
+    Мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
     Мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
     Мок PaymentService
     Мок PaymentWorker
 
-    Вызов PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentProcessingStorage::setOrderByNumber($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number, $sum) -> исключение DatabaseException -> исключение ServerException -> PaymentProcessingStorage::removerOrderByNumber($order_number) 
+    Вызов PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number, $sum) -> исключение DatabaseException -> исключение ServerException -> PaymentProcessingStorage::removerOrderByNumber($order_number) 
 
     5) Ошибка соединения с базой данных/инконсистентности вводимых плейсохолдеров к кл-ву параметров и прочее в методе в методе setOrderIsPaid($order_number, $sum)
-    Мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> false
-    Мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
+    Мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
     Мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
     Мок PaymentService::sendPayment(string $encoded_payment_params): string -> "{"processing": true, "transaction_id": "transaction_id", "status": 200}"
     Мок PaymentWorker::sendToRefund(string|int $payment_transaction_id): bool -> true
 
-    Вызов PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentProcessingStorage::setOrderByNumber($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number, $sum) -> PaymentService::sendPayment($encoded_payment_params) -> PaymentRepository::setOrderIsPaid($order_number, $sum) -> исключение DatabaseException -> исключение ServerException -> PaymentProcessingStorage::removeOrderByNumber($order_number) -> PaymentWorker::sendToRefund($payment_transaction_id)
+    Вызов PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number, $sum) -> PaymentService::sendPayment($encoded_payment_params) -> PaymentRepository::setOrderIsPaid($order_number, $sum) -> исключение DatabaseException -> исключение ServerException -> PaymentProcessingStorage::removeOrderByNumber($order_number) -> PaymentWorker::sendToRefund($payment_transaction_id)
 
     6) Сценарий проходит успешно:
-    Мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> false
-    Мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
+    Мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
     Мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
     Мок PaymentService::sendPayment(string $encoded_payment_params): string -> "{"processing": true, "transaction_id": "transaction_id", "status": 200}"
     Мок PaymentWorker
 
-    Вызов PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentProcessingStorage::setOrderByNumber($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number, $sum) -> PaymentProcessingStorage::setOrderByNumber($order_number) -> PaymentService::sendPayment($encoded_payment_params) -> PaymentRepository::setPaidOrder($order_number, $sum) -> PaymentProcessingStorage::removeOrderByNumber($order_number) -> Возврат ответа "Оплата прошла успешно" с кодом 200
+    Вызов PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number, $sum) -> PaymentService::sendPayment($encoded_payment_params) -> PaymentRepository::setPaidOrder($order_number, $sum) -> PaymentProcessingStorage::removeOrderByNumber($order_number) -> Возврат ответа "Оплата прошла успешно" с кодом 200
 
 
 ## back - payment_service
@@ -596,31 +585,31 @@
         Клиент -> backend -> валидация списка входящих параметров -> валидация списка входящих параметров |EXCEPTION| -> возврат сообщения об ошибке с кодом 400 -> клиент -> вывод сообщения об ошибке валидации.
 
     2) Если один/несколько параметров из ['card_number', 'card_holder', 'card_expiration', 'cvv'] не являются действительными, то:
-        Клиент -> backend -> валидация списка входящих параметров -> проверка текущего заказа на обработку в in memory хранилище -> запись номера заказа в in memory хранилище -> проверка в репозитории номера заказа на предмет оплаты -> backend -> запрос к сервису оплаты A |403 response| -> backend -> возврат ошибки 403 -> удаление сведений об обработке заказа из in memory хранилища -> клиент -> вывод сообщения об ошибке "Не удалось списать данные с карты, проверьте реквизиты"
+        Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует -> проверка в репозитории номера заказа на предмет оплаты -> backend -> запрос к сервису оплаты A |403 response| -> backend -> возврат ошибки 403 -> удаление сведений об обработке заказа из in memory хранилища -> клиент -> вывод сообщения об ошибке "Не удалось списать данные с карты, проверьте реквизиты"
 
     3) Если сумма платежа несоответствует номеру заказу, то:
-        Клиент -> backend -> валидация списка входящих параметров -> проверка текущего заказа на обработку в in memory хранилище -> запись номера заказа в in memory хранилище -> проверка в репозитории номера заказа на предмет оплаты -> backend -> проверка в репозитории соответствия суммы платежа номеру заказа -> backend |EXCEPTION| -> удаление сведений о заказе из in memory хранилища -> возврат ошибки 409 с телом ответа "Сумма платежа несоответствует номеру заказа" -> клиент -> вывод сообщения об ошибке "Номер платежа несоответствует номеру заказа"
+        Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует -> проверка в репозитории номера заказа на предмет оплаты -> backend -> проверка в репозитории соответствия суммы платежа номеру заказа -> backend |EXCEPTION| -> удаление сведений о заказе из in memory хранилища -> возврат ошибки 409 с телом ответа "Сумма платежа несоответствует номеру заказа" -> клиент -> вывод сообщения об ошибке "Номер платежа несоответствует номеру заказа"
     
     4) Если оплаченный заказ существует в системе, то:
-        Клиент -> backend -> валидация списка входящих параметров -> проверка текущего заказа на обработку в in memory хранилище -> запись номера заказа в in memory хранилище -> проверка в репозитории номера заказа на предмет оплаты -> backend |EXCEPTION| -> backend -> удаление сведений о заказе из in memory хранилища -> возврат ошибки 409 c телом ответа "Данный заказ уже существует в системе" -> клиент -> вывод сообщения об ошибке "Данный заказ уже существует в системе"
+        Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует -> проверка в репозитории номера заказа на предмет оплаты -> backend |EXCEPTION| -> backend -> удаление сведений о заказе из in memory хранилища -> возврат ошибки 409 c телом ответа "Данный заказ уже существует в системе" -> клиент -> вывод сообщения об ошибке "Данный заказ уже существует в системе"
 
     5) Если сервис оплаты A недоступен, то:
-        Клиент -> backend -> валидация списка входящих параметров -> проверка текущего заказа на обработку в in memory хранилище -> запись номера заказа в in memory хранилище -> проверка в репозитории номера заказа на предмет оплаты -> backend ->  проверка в репозитории соответствия суммы платежа номеру заказа -> backend -> запрос к сервису оплаты A |ERROR| -> backend -> удаление сведений об обработке заказа из in memory хранилища -> возврат сообщения об ошибке с кодом 500 -> клиент -> вывод сообщения об ошибке "Сервис оплаты временно недоступен, повторите операцию позднее"
+        Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует -> проверка в репозитории номера заказа на предмет оплаты -> backend ->  проверка в репозитории соответствия суммы платежа номеру заказа -> backend -> запрос к сервису оплаты A |ERROR| -> backend -> удаление сведений об обработке заказа из in memory хранилища -> возврат сообщения об ошибке с кодом 500 -> клиент -> вывод сообщения об ошибке "Сервис оплаты временно недоступен, повторите операцию позднее"
 
     6) Если возникли ошибки бд во время вызова checkPaidOrderIsExists репозитория, то:
-        Клиент -> backend -> валидация списка входящих параметров -> проверка текущего заказа на обработку в in memory хранилище -> запись номера заказа в in memory хранилище -> проверка в репозитории номера заказа на предмет оплаты|ERROR| -> backend -> удаление сведений о заказе из in memory хранилища -> возврат сообщения об ошибке с кодом 500 -> клиент -> вывод сообщения об ошибке "Сервис временно недоступен, повторите операцию позднее"
+        Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует -> проверка в репозитории номера заказа на предмет оплаты|ERROR| -> backend -> удаление сведений о заказе из in memory хранилища -> возврат сообщения об ошибке с кодом 500 -> клиент -> вывод сообщения об ошибке "Сервис временно недоступен, повторите операцию позднее"
 
     7) Если возникли ошибки бд во время вызова checkSumIsValidForOrderNumber репозитория, то:
-        Клиент -> backend -> валидация списка входящих параметров -> проверка текущего заказа на обработку в in memory хранилище -> запись номера заказа в in memory хранилище -> проверка в репозитории номера заказа на предмет оплаты -> backend -> проверка в репозитории соответствия суммы платежа номеру заказа|ERROR| -> backend -> удаление сведений о заказе из in memory хранилища -> возврат сообщения об ошибке с кодом 500 -> клиент -> вывод сообщения об ошибке "Сервис временно недоступен, повторите операцию позднее".
+        Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует -> проверка в репозитории номера заказа на предмет оплаты -> backend -> проверка в репозитории соответствия суммы платежа номеру заказа|ERROR| -> backend -> удаление сведений о заказе из in memory хранилища -> возврат сообщения об ошибке с кодом 500 -> клиент -> вывод сообщения об ошибке "Сервис временно недоступен, повторите операцию позднее".
 
     8) Если возникли ошибки бд во время вызова setOrderIsPaid, то:
-        Клиент -> backend -> валидация списка входящих параметров -> проверка текущего заказа на обработку в in memory хранилище -> запись номера заказа в in memory хранилище -> проверка в репозитории номера заказа на предмет оплаты -> backend -> проверка в репозитории соответствия суммы платежа номеру заказа -> backend -> обращения к платежному сервису A -> запись в базу сведений о оплаченном заказе|ERROR| -> backend -> передача идентификатора платежной транзакции в воркер для refund -> возврат сообщения об ошибке с кодом 500 -> клиент -> удаление сведений об обработке текущего заказа из in memory хранилища -> вывод сообщения об ошибке "Ошибка сервиса, ожидается возврат средств"
+        Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует -> проверка в репозитории номера заказа на предмет оплаты -> backend -> проверка в репозитории соответствия суммы платежа номеру заказа -> backend -> обращения к платежному сервису A -> запись в базу сведений о оплаченном заказе|ERROR| -> backend -> передача идентификатора платежной транзакции в воркер для refund -> возврат сообщения об ошибке с кодом 500 -> клиент -> удаление сведений об обработке текущего заказа из in memory хранилища -> вывод сообщения об ошибке "Ошибка сервиса, ожидается возврат средств"
 
     9) Повторная отправка заказа:
-        Клиент -> backend -> валидация списка входящих параметров -> проверка текущего заказа на обработку в in memory хранилище -> возврат ответа "Данный заказ уже проходит обработку в системе" с кодом 409
+        Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует -> возврат ответа "Данный заказ уже проходит обработку в системе" с кодом 409
 
 
     10) Позитивный кейс:
-        Клиент -> backend -> валидация списка входящих параметров -> проверка текущего заказа на обработку в in memory хранилище -> Запись номерка текущего заказа в in memory хранилище -> проверка в репозитории номера заказа на предмет оплаты -> проверка в репозитории соответствия суммы платежа номеру заказа -> backend -> обращение к платежному сервису A -> запись в базу сведений о оплаченном заказе -> backend -> удаление сведений об обработке текущего заказа из in memory хранилища -> возврат сообщения с кодом 200 -> клиент -> вывод сообщения "Оплата прошла успешно"
+        Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует -> проверка в репозитории номера заказа на предмет оплаты -> проверка в репозитории соответствия суммы платежа номеру заказа -> backend -> обращение к платежному сервису A -> запись в базу сведений о оплаченном заказе -> backend -> удаление сведений об обработке текущего заказа из in memory хранилища -> возврат сообщения с кодом 200 -> клиент -> вывод сообщения "Оплата прошла успешно"
 
 
