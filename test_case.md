@@ -10,57 +10,319 @@
 
     Тестируемый класс - PaymentController, метод -processPayment(array $payment_params); Моки - PaymentRepository, PaymentService. Моки метода - PaymentService::sendPayment(string json_payment_params) - возвращает "{"process":true, "transcation_id": "transcation_id", "code"; 200}";
 
-    Входящие данные - хэш с произвольным кл-вом параметров.
 
     1) Валидационные кейсы
-    1.a) Входящие данные для валидационных кейсов:
-        Тип: Хэш
-        Примеры входящих данных:
-        [], ['card_order': 'qweqwedd1122']
+    1.a) Некорректный номер карты
+    Мок PaymentRepository
+    Мок PaymentService
+    Мок PaymentProcessingStorage
+    Мок PaymentWorker
+    Мок PaymentService
+    Мок PaymentWorker
     
-    b) Проверка входящих параметров
+    1.b) Проверка входящих параметров
 
-    1.b.1) card_number: 
-        1.1.1) Если card_number содержит отличные от цифр значения, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.1.2) Если кл-во символов в card_number не равно 16, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.1.3) Если card_number является пустой строкой, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.1.3) Если card_number не найден в списке входящих параметров, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.1.4) Если указан отличный от строки тип данных для card_number, то тестируемый метод возвращает 400 с сообщением об ошибке
+    1.b.1) card_number:
+        1.b.1.a) Требования:
+        card_number должен быть строкой, обязательно содержащейся в списке параметров и не может быть пустым и должен содержать только цифры и длина card_number должна быть равна 16. Примеры валидных данных - '11112222333344445555'. Примеры невалидных данных - '11122', '11112222333344445555999', '111122223333444455qq'.
 
-    1.b.2) card_holder:
-        1.2.1) Если card_holder не найден в списке входящих параметров, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.2.2) Если card_holder является пустой строкой, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.2.3) Если card_holder содержит отличные от латинского алфавита символы, за исключением пробела и дефиса, то тестируемый метод возвращает 400 с  сообщением об ошибке
-        1.2.4) Если card_holder содержит символ/последовательность пробела/дефиса в строке, которая встречается более одного раза в строке, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.2.5) Если card_holder содержит символ дефиса в начале или конце строки, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.2.6) Допустимый формат card_holder - "Anna Ivanova|Anna Maria-Ivanova", где символ может быть в любом регистре, в случае несоответствия входящих данных приемлемому формату строки, тестируемый метод возвращает 400 с сообщением об ошибке. Примеры некорректного значения - "Anna|Anna-Ivanova|Anna-Maria Ivanova"
-        1.2.7) Если указан отличный от строки тип данных для card_holder, то тестируемый метод возвращает 400 с сообщением об ошибке
+        1.b.1.b.1) Входящие данные:
+        [
+            'card_number': '122333222qwwww',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25,425'  
+        ],
+        1.b.1.b.1) Метод PaymentController::processPayment($payment_params) -> обнаружение невалидности card_number -> исключение InvalidPaymentParamsException
+        1.b.1.c.1) Ответ "card_number не является корректным" с кодом 400
 
-    1.b.3) card_expiration:
-        1.3.1) Если card_expiration не найден в списке входящих параметров, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.3.2) Если card_expiration имеет отличный от строки тип, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.3.3) Если card_expiration является пустой строкой, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.3.4) Если card_expiration не соответствует формату mm/yy, то тестируемый метод возвращает 400 с сообщением об ошибке. В формате mm - месяц, / - разделитель, yy - год. Пример корректного формата - "04/26", где месяц может иметь цифровые значения от 01 до 12, разделитель - только значение /, год - от 00 до 99. Пример некорректного формата - "13\111", "00/25"
+        1.b.1.b.2) Входящие данные:
+         [
+            'card_number': '',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25,425'
+        ],
+        1.b.1.b.2) Метод PaymentController::processPayment($payment_params) -> обнаружение, что card_number является пустой строкой -> исключение InvalidPaymentParamsException
+
+        1.b.1.b.2) Ответ "Номер не может быть пустым" с кодом 400
+
+        1.b.1.b.3) Входящие данные:
+        [
+            'card_number': 222,
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25,425'  
+        ],
+        1.b.1.b.3) Метод PaymentController::processPayment($payment_params) -> обнаружение, что тип card_number отличен от строки -> исключение InvalidPaymentParamsException
+
+        1.b.1.b.3) Ответ "Номер карты не является корректным" с кодом 400
+
+        1.b.1.b.4) Входящие данные
+        [
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25,425'  
+        ],
+        1.b.1.b.4) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр card_number не содержится в списке параметров -> исключение InvalidPaymentParamsException
+
+        1.b.1.b.4) Ответ "Номер карты не найден в списке входящих параметров" с кодом 400
+
+    1.b.2) card_holder
+        1.b.2.a) Требования:
+        card_holder должен содержатся в списке параметров и быть строкой, которая не является пустой и содержит символы латинского алфавита, которая допускает символы дефиса и пробела, каждый из которых может встретится только один раз в любом месте строки, за исключением начала строки и ее конца, и один из них обязательно должен один раз встретится в строке. Примеры валидного формата - "Anna Ivanova", "Anna Maria-Ivanova", "Anna-Maria Ivanova".
+
+        1.b.2.b.1) Входящие данные:
+        [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan111',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25,425'  
+        ],
+        1.b.2.b.2) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр card_holder не является корректным -> исключение InvalidPaymentParamsException
+        1.b.2.b.2) Ответ "Владелец карты не является корректным" с кодом 400
+
+        1.b.2.b.3) Входящие данные:
+        [
+            'card_number': '2918231098324571',
+            'card_holder': '',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25,425'  
+        ],
+         1.b.2.b.3) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр card_holder не является корректным -> исключение InvalidPaymentParamsException
+         1.b.2.b.3) Ответ "Владелец карты не может быть пустым" с кодом 400
+
+         1.b.2.b.4) Входящие данные:
+        [
+            'card_number': '2918231098324571',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25,425'  
+        ],
+         1.b.2.b.4) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр card_holder не содержится в списке параметров -> исключение InvalidPaymentParamsException
+         1.b.2.b.4) Ответ "Владелец карты не обнаружен в списке входящих параметров" с кодом 400
+
+    
+    1.b.3) card_expiration
+        1.b.3.a) Требования:
+        card_expiration должен присутствовать в списке параметров, быть строкой, которая не является пустой и соответствовать формату mm/yy, где mm - пара цифр от 01 до 12, а yy - пара цифыр от 00 до 99. Примеры корректного формата - 08/30, 02/27. Примеры некорректного формата - 00/13, 15/25.
+
+        1.b.3.b.1) Входящие данные:
+        [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '15/30',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25,425'  
+        ],
+        1.b.3.b.1) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр card_expiration не является валидным -> исключение InvalidPaymentParamsException
+        1.b.3.b.1) Ответ "Срок действия не является корректным" с кодом ответа 400
+
+        1.b.3.b.2) Входящие данные:
+        [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25,425'  
+        ],
+        1.b.3.b.2) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр card_expiration является пустым -> исключение InvalidPaymentParamsException
+        1.b.3.b.2) Ответ "Срок действия не может быть пустым" с кодом ответа 400
+
+
+        1.b.3.b.3) Входящие данные:
+        [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25,425'  
+        ],
+        1.b.3.b.3) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр card_expiration отсутствует в списке параметров -> исключение InvalidPaymentParamsException
+        1.b.3.b.3) Ответ "Срок действия не обнаружено в списке входящих параметров" с кодом ответа 400
+
+
+    
+    1.b.4) cvv
+        1.b.4.a) Требования:
+        Поле cvv должно присутствовать в списке входящих параметров, быть строкой, не являющейся пустой и состоящей только из цифр, длина которой равна 3. Примеры корректных данных - '221', '555'. Примеры некорретных данных - '9q1', '55555'.
+
+        1.b.4.b.1) Входящие данные:
+        [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': '32qq',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25,425'  
+        ],
+        1.b.4.b.1) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр cvv содержит отличные от цифр символы и длина параметра не равна 3 -> Исключение InvalidPaymentParamsException
+        1.b.4.b.1) Ответ "cvv не является корректным" с кодом ответа 400
+
+        1.b.4.b.2) Входящие данные:
+        [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': '',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25,425'  
+        ],
+        1.b.4.b.2) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр cvv является пустым -> исключение InvalidPaymentParamsException
+        1.b.4.b.2) Ответ "cvv не может быть пустым" с кодом 400
+
+
+        1.b.4.b.3) Входящие данные:
+        [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': 222,
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25,425'  
+        ],
+        1.b.4.b.3) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр cvv содержит отличный от строки тип -> исключение InvalidPaymentParamsException
+        1.4.b.3) Ответ "cvv не является корректным" с кодом 400
+
+        1.b.4.b.3) Входящие данные:
+         [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25,425'  
+        ],
+        1.b.4.b.3) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр cvv отсутствует в списке параметров -> исключение InvalidPaymentParamsException
+        1.b.4.b.3) Ответ "cvv не найден в списке параметров" с кодом 400
+
+
+
+    1.b.5) order_number
+        1.b.5.a) Требования:
+        order_number должен представлять собой непустую строку произвольных символов, кл-во символов в которой не может превышать 16.
+        1.b.5.b.1) Входящие данные:
+         [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32222',
+            'sum': '25,425'  
+         ],
+         1.b.5.b.1) Метод PaymentController::processPayment($payment_params) -> обнаружение, что длина параметра order_number превышает 16 символов -> исключение InvalidPaymentParamsException
+         1.b.5.b.1) Ответ "Номер заказа не может превышать 16 символов" с кодом 400
+
+         1.b.5.b.2) Входящие данные:
+         [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'order_number': '',
+            'sum': '25,425'  
+         ],
+         1.b.5.b.2) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр order_number является пустым-> исключение InvalidPaymentParamsException
+         1.b.5.b.2) Ответ "Номер заказа не может быть пустым" с кодом 400
+
+        1.b.5.b.3) Входящие данные:
+         [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'order_number': 222,
+            'sum': '25,425'  
+         ],
+         1.b.5.b.3) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр order_number является пустым-> исключение InvalidPaymentParamsException
+         1.b.5.b.3) Ответ "Номер заказа не может быть пустым" с кодом 400
+
         
-    1.b.4) cvv:
-        1.4.1) Если cvv не найден в списке входящих параметров, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.4.2) Если cvv имеет отличный от строки тип, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.4.3) Если cvv является пустой строкой, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.4.4) Если cvv содержит отличные от цифр символы, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.4.5) Если длина cvv не равна трем, то тестируемый метод возвращает 400 с сообщением об ошибке
+        1.b.5.b.3) Входящие данные:
+        [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'sum': '25,425'  
+         ],
+         1.b.5.b.3) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр order_number отсутствует в списке параметров-> исключение InvalidPaymentParamsException
+         1.b.5.b.3) Ответ "Номер заказа не найден в списке параметров" с кодом 400
 
-    1.b.5) order_number:
-        1.5.1) Если order_number не найден в списке входящих параметров, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.5.2) Если order_number имеет отличный от строки тип, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.5.3) Если order_number является пустой строкой, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.5.4) Если кл-во символов в order_number превышает 16, то тестируемый метод возвращает 400 с сообщением об ошибке
-    1.b.6) sum:
-        1.6.1) Если sum не найден в списке входящих параметров, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.6.2) Если sum имеет отличный от строки тип, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.6.3) Если sum является пустой строкой, то тестируемый метод возвращает 400 с сообщением об ошибке
-        1.6.4) Если sum содержит отличные от цифр и запятой символы, или если запятая встречается в sum более чем один раз или в начале или конце sum, то тестируемый метод возвращает 400 с сообщением об ошибке
 
-    2) Обработка всех данных прошла успешно -
+    1.b.6) sum
+        1.b.6.a) Требования:
+        Параметр sum должен быть строкой, которая не должна быть пустой и должна состоять только из цифр, допускается символ запятой, за исключением начала или конца строки. Пример валидных данных -'25,425', '425'. Примеры невалидных данных - '25.425', 'aa12'.
+
+        1.b.6.b.1) Входящие данные:
+        [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': '25.425'  
+        ],
+        1.b.6.b.1) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр sum не является валидным -> исключение InvalidPaymentParamsException
+        1.b.6.b.1) Ответ "Сумма заказа не является корректной" с кодом 400
+
+
+
+        1.b.6.b.2) Входящие данные:
+        [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': 25.425  
+        ],
+        1.b.6.b.2) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр sum не является строковым -> исключение InvalidPaymentParamsException
+        1.b.6.b.2) Ответ "Сумма заказа не является корректной" с кодом 400
+
+
+
+        1.b.6.b.3) Входящие данные:
+        [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32',
+            'sum': ''  
+        ],
+        1.b.6.b.3) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр sum является пустой строкой -> исключение InvalidPaymentParamsException
+        1.b.6.b.3) Ответ "Сумма заказа не может быть пустой" с кодом 400 
+
+
+        1.b.6.b.4) Входящие данные:
+        [
+            'card_number': '2918231098324571',
+            'card_holder': 'Ivan Ivanov',
+            'card_expiration': '11/30',
+            'cvv': '325',
+            'order_number': '1g-x2f-q112-op32',
+
+        ],
+        1.b.6.b.4) Метод PaymentController::processPayment($payment_params) -> обнаружение, что параметр параметр sum отсутствует в списке параметров -> исключение InvalidPaymentParamsException
+        1.b.6.b.4) Ответ "Параметр суммы заказа отсутствует в списке параметров" с кодом 400 
+
+
+    2) Обработка всех данных прошла успешно; Поведение зависит от результатов моков изолированного окружения -
         2.1) Входящие данные - 
             [
                 'card_number': '2918231098324571',
@@ -68,10 +330,83 @@
                 'card_expiration': '11/30',
                 'cvv': '325',
                 'order_number': '1g-x2f-q112-op32',
-                'sum': '25.425'  
+                'sum': '25,425'  
             ],
-        2.2) Обработка входящих данных, вызов мока PaymentService::sendPayment-> возвращает 200. Вызов мока PaymentRepository::setOrderIsPaid->возвращает true. Вернуть 200 с сообщением об успешной оплате.
+
+
+        2.1.a) Успешная оплата
         
+        мок PaymentWorker::sendToRefund(string $payment_transcation_id): bool -> true
+        мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
+        мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> false
+        мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
+        мок PaymentRepository::checkPaidOrderIsExists(string $order_number): bool -> false
+        мок PaymentRepository::checkSumIsValidForOrderNumber(string $order_number, float $sum): bool -> true
+        мок PaymentRepository::setOrderIsPaid(string $order_number): bool -> true
+        мок PaymentService::sendPayment(string $encoded_payment_params): string -> "{"process":true, "transcation_id": "transcation_id", "code": 200}"
+
+        2.1.b) PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($oder_number, $sum) -> PaymentProcessingStorage::setOrderByNumber($order_number)  ->  -> PaymentService::sendPayment($encoded_payment_params) -> PaymentRepository::setOrderIsPaid($order_number) -> PaymentProcessingStorage::removeOrderByNumber($order_number)
+
+        2.2.c) Возврат ответа с сообщением "Оплата прошла успешно"  и кодом 200 
+
+        2.2.a) Невалидные реквизиты
+        
+        мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
+        мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
+        мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> false
+        мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
+        мок PaymentRepository::checkPaidOrderIsExists(string $order_number): bool -> false
+        мок PaymentRepository::checkSumIsValidForOrderNumber(string $order_number, float $sum): bool -> true
+        мок PaymentRepository::setOrderIsPaid(string $order_number): bool -> true
+        мок PaymentService::sendPayment(string $encoded_payment_params): string -> "{"process":false, "transcation_id": "transcation_id", "code": 403}"
+
+
+        2.2.b) Вызов PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number, $sum) -> PaymentProcessingStorage::setOrderByNumber($order_number) -> PaymentService::sendPayment($encoded_payment_params) -> выброс исключения PaymentServiceException с ошибкой 403 -> PaymentProcessingStorage::removeOrderByNumber($order_number)
+
+        2.2.c) Возврат ответа с сообщением "Не удалось списать данные с карты, проверьте реквизиты" и кодом 403
+
+        2.3.a) Оплаченный заказ уже существует в системе
+
+        мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
+        мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
+        мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> false
+        мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
+        мок PaymentRepository::checkPaidOrderIsExists(string $order_number): bool -> true
+        мок PaymentRepository::checkSumIsValidForOrderNumber(string $order_number, float $sum): bool -> true
+        мок PaymentRepository::setOrderIsPaid(string $order_number): bool -> true
+        мок PaymentService::sendPayment(string $encoded_payment_params): string -> "{"process":true, "transcation_id": "transcation_id", "code": 200}"
+        
+        2.3.b) Вызов PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> выброс исключения PaidOrderAlreadyExistsException с ошибкой 409
+        
+        2.3.c) Возврат ответа с сообщением "Оплаченный заказ уже существует в системе" и кодом 409
+
+        2.4.a) Сумма платежа несоответствует номеру заказа
+
+        мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
+        мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
+        мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> false
+        мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
+        мок PaymentRepository::checkPaidOrderIsExists(string $order_number): bool -> false
+        мок PaymentRepository::checkSumIsValidForOrderNumber(string $order_number, float $sum): bool -> false
+        мок PaymentRepository::setOrderIsPaid(string $order_number): bool -> true
+        мок PaymentService::sendPayment(string $encoded_payment_params): string -> "{"process":true, "transcation_id": "transcation_id", "code": 200}"
+        
+        2.4.b) Вызов PaymentProcessingStorage::checkOrderByNumber($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository->checkSumIsValidForOrderNumber($order_number) -> выброс исключения PaymentSumInconsistenceForOrder -> возврат сообщения об ошибке "Сумма платежа несоответствует номеру заказа" с кодом 409
+
+        2.5.a) Заказ с таким номером уже проходит обратотку в системе
+        
+        мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
+        мок PaymentProcessingStorage::setOrderByNumber(string $order_number): bool -> true
+        мок PaymentProcessingStorage::checkOrderByNumber(string $order_number): bool -> true
+        мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
+        мок PaymentRepository::checkPaidOrderIsExists(string $order_number): bool -> false
+        мок PaymentRepository::checkSumIsValidForOrderNumber(string $order_number, float $sum): bool -> true
+        мок PaymentRepository::setOrderIsPaid(string $order_number): bool -> true
+        мок PaymentService::sendPayment(string $encoded_payment_params): string -> "{"process":true, "transcation_id": "transcation_id", "code": 200}"
+    
+        2.5.b) Вызов PaymentProcessingStorage::checkOrderByNumber($order_number) -> Выброс исключения OrderAlreadyProcessingException
+
+        2.5.c) Возврат сообщения "Данный заказ уже проходит обработку в системе" с кодом 409
 
 
 # Интеграционное тестирование
@@ -107,7 +442,7 @@
 
         1.2.4) Если card_holder не содержит ни одного символа кроме пробельных, то после ответа от бэка, поле "Владелец карты" выделяется красной рамой с текстом над полем "Поле владелец карты не может быть пустым"
 
-        1.2.5) Если card_holder имеет отличающийся от допустимого формата - "Anna Ivanova|Anna Maria-Ivanova", где символ может быть в любом регистре. В случае несоответствия входящих данных приемлемому формату строки, после ответа от бэка поле "Владелец карты" выделяется красной рамой с текстом над полем "Поле владелец карты имеет некорректное значение". Примеры некорректного значения - "Anna|Anna-Ivanova|Anna-Maria Ivanova"
+        1.2.5) Если card_holder имеет отличающийся от допустимого формата - "Anna Ivanova|Anna Maria-Ivanova|Anna-Maria Ivanova", где символ может быть в любом регистре. В случае несоответствия входящих данных приемлемому формату строки, после ответа от бэка поле "Владелец карты" выделяется красной рамой с текстом над полем "Поле владелец карты имеет некорректное значение". Примеры некорректного значения - "Anna|Anna-Ivanova"
 
         1.2.6) Если card_holder имеет отличный от строки тип, то после получения ответа от бэка вывести в консоль ответ "Неопределенное значение поля card_holder"
 
@@ -195,10 +530,11 @@
 
     8) В случае, если в методе setOrderIsPaid  выясняется, что оплаченный заказ существует в бд, то выбросить в репозитории исключение PaidOrderAlreadyExists, которое перехватывается в бэке и выбрасывается в исключение ServerException, далее осуществляется  передача идентификатора платежной транзакции моку воркеру. Клиенту возвращается ответ с кодом 520.
 
+    9) В случае, если неоплаченный заказ существует, вызов метода checkPaidOrderIsExists вернул false, checkSumIsValidForOrderNumber вернул true, вызывается мок сервиса оплаты A с последующим вызовом метода setOrderIsPaid с внесением записи в тестовой бд о заказе как оплаченного. Клиенту возвращается ответ с кодом 200. 
 
 
 ## back - payment_service
-    Окружение - сервис оплаты А представляет sandbox сервиса оплаты.
+    Окружение - сервис оплаты А представляет sandbox сервиса оплаты, а репозиторий является моком.
 
     1) В случае, если сервис оплаты не отвечает, выбросить PaymentServiceIsNotAvailable, клиенту вернуть код 500.
     2) В случае, если сервис оплаты вернул ответ с кодом 200, выполнить setOrderIsPaid репозитория (рассматриваем успешный кейс - иные случае описаны в секции back - repository) и вернуть клиенту ответ с кодом 200.
