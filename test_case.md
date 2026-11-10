@@ -19,6 +19,7 @@
     Мок PaymentWorker
     Мок PaymentService
     Мок PaymentWorker
+    Мок Logger
     
     1.b) Проверка входящих параметров
 
@@ -484,7 +485,8 @@
             'order_number': '1g-x2f-q112-op32',
             'sum': '25,425'  
         ],
-    мок Logger::sendAlarm(string $alarm_message): void 
+    мок Logger::sendAlarm(string $alarm_message): void
+    мок Logger::sendWarn(string $warn_message): void
     мок PaymentWorker::sendToRefund(string $payment_transcation_id): bool -> true
     мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
     мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
@@ -497,6 +499,7 @@
     PaymentController::processPayment($payment_params) -> ошибка валидации -> return ['message': 'cvv должен быть строкой', 'status': 400]
 
     Вызов Logger::sendAlarm осуществлен 0 раз
+    Вызов Logger::sendWarn осуществлен 0 раз
     Вызов PaymentWorker::sendToRefund осуществлен 0 раз
     Вызов PaymentProcessingStorage::setOrderByNumberIfNotExists осуществлен 0 раз
     Вызов PaymentProcessingStorage::removeOrderByNumber осуществлен 0 раз
@@ -521,7 +524,8 @@
 
         2.1.a) Успешная оплата
         
-        мок Logger::sendAlarm(string $alarm_message): void 
+        мок Logger::sendAlarm(string $alarm_message): void
+        мок Logger::sendWarn(string $warn_message): void
         мок PaymentWorker::sendToRefund(string $payment_transcation_id): bool -> true
         мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
@@ -548,12 +552,14 @@
 
         Вызов PaymentWorker::sendToRefund осуществлен 0 раз
         Вызов Logger::sendAlarm осуществлен 0 раз
+        Вызов Logger::sendWarn осуществлен 0 раз
 
         2.1.d) Возврат ответа с сообщением "Оплата прошла успешно"  и кодом 200 
 
         2.2.a) Невалидные реквизиты
         
-        мок Logger::sendAlarm(string $alarm_message): void 
+        мок Logger::sendAlarm(string $alarm_message): void
+        мок Logger::sendWarn(string $warn_message): void
         мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
         мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
@@ -581,12 +587,14 @@
         Вызов PaymentRepository::setOrderIsPaid осуществлен 0 раз
         Вызов PaymentWorker::sendToRefund осуществлен 0 раз
         Вызов Logger::sendAlarm осуществлен 0 раз
+        Вызов Logger::sendWarn осуществлен 0 раз
 
         2.2.d) Возврат ответа с сообщением "Не удалось списать данные с карты, проверьте реквизиты" и кодом 403
 
         2.3.a) Оплаченный заказ уже существует в системе
 
-        мок Logger::sendAlarm(string $alarm_message): void 
+        мок Logger::sendAlarm(string $alarm_message): void
+        мок Logger::sendWarn(string $warn_message): void
         мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
         мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
@@ -613,12 +621,14 @@
         Вызов PaymentWorker::sendToRefund осуществлен 0 раз
         Вызов PaymentService::sendPayment осуществлен 0 раз
         Вызов Logger::sendAlarm осуществлен 0 раз
+        Вызов Logger::sendWarn осуществлен 0 раз
 
         2.3.d) Возврат ответа с сообщением "Оплаченный заказ уже существует в системе" и кодом 409
 
         2.4.a) Сумма платежа несоответствует номеру заказа
 
-        мок Logger::sendAlarm(string $alarm_message): void 
+        мок Logger::sendAlarm(string $alarm_message): void
+        мок Logger::sendWarn(string $warn_message): void
         мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
         мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
@@ -645,12 +655,14 @@
         Вызов PaymentService::sendPayment осуществлен 0 раз
         Вызов PaymentWorker::sendToRefund осуществлен 0 раз
         Вызов Logger::sendAlarm осуществлен 0 раз
+        Вызов Logger::sendWarn осуществлен 0 раз
 
         2.4.d) Возврат сообщения об ошибке "Сумма платежа несоответствует номеру заказа" с кодом 409
 
         2.5.a) Заказ с таким номером уже проходит обработку в системе
         
-        мок Logger::sendAlarm(string $alarm_message): void 
+        мок Logger::sendAlarm(string $alarm_message): void
+        мок Logger::sendWarn(string $warn_message): void
         мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
         мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> false
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
@@ -677,13 +689,15 @@
         Вызов PaymentWorker::sendToRefund осуществлен 0 раз
         Вызов PaymentProcessingStorage::removeOrderByNumber осуществлен 0 раз
         Вызов Logger::sendAlarm осуществлен 0 раз
+        Вызов Logger::sendWarn осуществлен 0 раз
 
         2.5.d) Возврат сообщения "Данный заказ уже проходит обработку в системе" с кодом 409
 
 
         2.6.a) Сервис оплаты A вернул 500
 
-        мок Logger::sendAlarm(string $alarm_message): void 
+        мок Logger::sendAlarm(string $alarm_message): void
+        мок Logger::sendWarn(string $warn_message): void
         мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
         мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
@@ -710,6 +724,7 @@
         Вызов PaymentRepository::setOrderIsPaid осуществлен 0 раз
         Вызов PaymentWorker::sendToRefund осуществлен 0 раз
         Вызов Logger::sendAlarm осуществлен 0 раз
+        Вызов Logger::sendWarn осуществлен 0 раз
 
         2.6.d) Возврат сообщения "Сервер оплаты недоступен, повторите позднее" с кодом 500
 
@@ -718,7 +733,8 @@
         2.7.a) В методе PaymentRepository::checkSumIsValidForOrderNumber произошло исключение SumMustGreaterThanZero
         
         2.7.b)
-        мок Logger::sendAlarm(string $alarm_message): void 
+        мок Logger::sendAlarm(string $alarm_message): void
+        мок Logger::sendWarn(string $warn_message): void
         мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
         мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
@@ -731,16 +747,17 @@
 
         Вызов PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number, $sum) -> исключение SumMustBeGreaterThanZero->withMessage('Сумма оплаты заказа не может быть равной или меньше нуля') ->:out
 
-        PaymentController::processPayment -> PaymentProcessingStorage::removeOrderByNumber($order_number) -> Logger::sendAlarm($exception_message) -> return ['error': 'Ошибка сервиса, повторите операцию позднее', 'status': 520]
+        PaymentController::processPayment -> PaymentProcessingStorage::removeOrderByNumber($order_number) -> Logger::sendWarn($exception_message) -> return ['error': 'Ошибка сервиса, повторите операцию позднее', 'status': 520]
 
         2.7.c)
-        Вызов Logger::sendAlarm осуществлен 1 раз
+        Вызов Logger::sendWarn осуществлен 1 раз
         Вызов PaymentProcessingStorage::setOrderByNumberIfNotExists осуществлен 1 раз
         Вызов PaymentProcessingStorage::removeOrderByNumber осуществлен 1 раз
         Вызов PaymentRepository::checkPaidOrderIsExists осуществлен 1 раз
         Вызов PaymentRepository::checkSumIsValidForOrderNumber осуществлен 1 раз
 
         Вызов PaymentRepository::setOrderIsPaid осуществлен 0 раз
+        Вызов Logger::sendAlarm осуществлен 0 раз
         Вызов PaymentService::sendPayment осуществлен 0 раз
         Вызов PaymentWorker::sendToRefund осуществлен 0 раз
 
@@ -750,6 +767,7 @@
 
         2.8.b)
         мок Logger::sendAlarm(string $alarm_message): void 
+        мок Logger::sendWarn(string $warn_message): void
         мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
         мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
@@ -772,6 +790,7 @@
         Вызов Logger::sendAlarm осуществлен 1 раз
 
         Вызов PaymentRepository::checkSumIsValidForOrderNumber осуществлен 0 раз
+        Вызов Logger::sendWarn осуществлен 0 раз
         Вызов PaymentRepository::setOrderIsPaid осуществлен 0 раз
         Вызов PaymentService::sendPayment осуществлен 0 раз
         Вызов PaymentWorker::sendToRefund осуществлен 0 раз
@@ -782,7 +801,8 @@
         2.9.a) В методе PaymentRepository::checkSumIsValidForOrderNumber произошло исключение
 
         2.9.b)
-        мок Logger::sendAlarm(string $alarm_message): void 
+        мок Logger::sendAlarm(string $alarm_message): void
+        мок Logger::sendWarn(string $warn_message): void
         мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
         мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
@@ -805,7 +825,7 @@
         Вызов PaymentRepository::checkSumIsValidForOrderNumber осуществлен 1 раз
         Вызов Logger::sendAlarm осуществлен 1 раз
 
-        
+        Вызов Logger::sendWarn осуществлен 0 раз
         Вызов PaymentRepository::setOrderIsPaid осуществлен 0 раз
         Вызов PaymentService::sendPayment осуществлен 0 раз
         Вызов PaymentWorker::sendToRefund осуществлен 0 раз
@@ -816,6 +836,7 @@
 
         2.10.b)
         мок Logger::sendAlarm(string $alarm_message): void 
+        мок Logger::sendWarn(string $warn_message): void
         мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
         мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
         мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
@@ -842,7 +863,62 @@
         Вызов Logger::sendAlarm осуществлен 1 раз
         Вызов PaymentWorker::sendToRefund осуществлен 1 раз
 
+        Вызов Logger::sendWarn осуществлен 0 раз
+
         2.10.d) Возврат сообщения "Ошибка сервиса, сумма скоро вернется к вам на карту" с кодом 520
+
+
+        2.11.a) Исключение throwable в методе PaymentProcessingStorage::setOrderByNumberIfNotExists
+        
+        2.11.b)
+        мок Logger::sendAlarm(string $alarm_message): void 
+        мок Logger::sendWarn(string $warn_message): void
+        мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
+        мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> throws throwable
+        мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
+        мок PaymentRepository::checkPaidOrderIsExists(string $order_number): bool -> false
+        мок PaymentRepository::checkSumIsValidForOrderNumber(string $order_number, float $sum): bool  -> true
+        мок PaymentRepository::setOrderIsPaid(string $order_number): bool -> true
+        мок PaymentService::sendPayment(string $encoded_payment_params): string -> "{"processing":true, "transcation_id": "transcation_id", "code": 200}"
+
+
+        PaymentController::processPayment($payment_params) ->:in
+
+        PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) -> исключение throwable ->:out
+
+        PaymentController::processPayment -> Logger::sendAlarm($exception_message) -> return ['error': 'Ошибка сервиса, повторите операцию позднее', 'status': 520]
+
+        2.11.c)
+        Вызов PaymentProcessingStorage::setOrderByNumberIfNotExists осуществляется 1 раз
+        Вызов Logger::sendAlarm осуществляется 1 раз
+
+        Вызов PaymentWorker::sendToRefund осуществляется 0 раз
+        Вызов PaymentProcessingStorage::removeOrderByNumber осуществляется 0 раз
+        Вызов PaymentRepository::checkPaidOrderIsExists осуществляется 0 раз
+        Вызов PaymentRepository::checkSumIsValidForOrderNumber осуществляется 0 раз
+        Вызов PaymentRepository::setOrderIsPaid осуществляется 0 раз
+        Вызов PaymentService::sendPayment осуществляется 0 раз
+
+
+        2.12.a) Исключение throwable в методе PaymentProcessingStorage::removeOrderByNumber
+
+        2.12.b)
+        мок Logger::sendAlarm(string $alarm_message): void 
+        мок Logger::sendWarn(string $warn_message): void
+        мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
+        мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
+        мок PaymentProcessingStorage::removeOrderByNumber(string $order_number): bool -> true
+        мок PaymentRepository::checkPaidOrderIsExists(string $order_number): bool -> throws throwable
+        мок PaymentRepository::checkSumIsValidForOrderNumber(string $order_number, float $sum): bool  -> true
+        мок PaymentRepository::setOrderIsPaid(string $order_number): bool -> true
+        мок PaymentService::sendPayment(string $encoded_payment_params): string -> "{"processing":true, "transcation_id": "transcation_id", "code": 200}"
+
+        PaymentController::processPayment($payment_params) ->:in
+
+        PaymentProcessingStorage::setOrderByNumberIfNotExists($order_number) -> PaymentRepository::checkPaidOrderIsExists($order_number) -> PaymentRepository::checkSumIsValidForOrderNumber($order_number, $sum) -> PaymentService::sendPayment($encoded_payment_params) -> PaymentRepository::setOrderIsPaid($order_number) -> PaymentProcessingStorage::removeOrderByNumber($order_number) -> исключение throwable ->:out
+
+        PaymentController::processPayment -> Logger::sendAlarm($warn_message) -> return ['message': 'Оплата прошла успешно', 'status': 200]
+
 
 
 
@@ -1300,6 +1376,7 @@
     Мок PaymentService::sendPayment(string $encoded_payment_params): "{"processing": true, "transaction_id": "transaction_id", "status": 200}"
     Мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
     Мок Logger::sendAlarm(string $message): void
+    Мок Logger::sendWarn(string $message): void
 
 
     1.2) Вызов PaymentController::processPayment($payment_params) ->:in
@@ -1313,6 +1390,7 @@
     Вызов PaymentProcessingStorage::removeOrderByNumber осуществлен 1 раз
     Вызов Logger::sendAlarm осуществлен 1 раз
 
+    Вызов Logger::sendWarn осуществлен 0 раз
     Вызов PaymentService::sendPayment осуществлен 0 раз
 
 
@@ -1322,6 +1400,7 @@
     Мок PaymentService::sendPayment(string $encoded_payment_params): "{"processing": true, "transaction_id": "transaction_id", "status": 200}"
     Мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
     Мок Logger::sendAlarm(string $message): void
+    мок Logger::sendWarn(string $message): void
 
     2.2) Вызов PaymentController::processPayment($payment_params) ->:in
 
@@ -1334,6 +1413,7 @@
     Вызов PaymentService::sendPayment осуществлен 0 раз
     Вызов PaymentWorker::sendToRefund осуществлен 0 раз
     Вызов Logger::sendAlarm осуществлен 0 раз
+    Вызов Logger::sendWarn осуществлен 0 раз
 
 
     3.1) Ошибка соединения с базой данных/инконсистентности вводимых плейсохолдеров к кл-ву параметров и прочее в методе в методе checkSumIsValidForOrderNumber
@@ -1342,6 +1422,7 @@
     Мок PaymentService::sendPayment(string $encoded_payment_params): "{"processing": true, "transaction_id": "transaction_id", "status": 200}"
     Мок PaymentWorker::sendToRefund(string $payment_transaction_id): bool -> true
     Мок Logger::sendAlarm(string $message): void
+    Мок Logger::sendWarn(string $message): void
 
     3.2) Вызов PaymentController::processPayment($payment_params) ->:in
 
@@ -1356,6 +1437,7 @@
     
     Вызов PaymentService::sendPayment осуществлен 0 раз
     Вызов PaymentWorker::sendToRefund осуществлен 0 раз
+    Вызов Logger::sendWarn осуществлен 0 раз
 
     4.1) Ошибка соединения с базой данных/инконсистентности вводимых плейсохолдеров к кл-ву параметров и прочее в методе в методе setOrderIsPaid($order_number, $sum)
     Мок PaymentProcessingStorage::setOrderByNumberIfNotExists(string $order_number): bool -> true
@@ -1378,6 +1460,8 @@
     Вызов Logger::sendAlarm осуществлен 1 раз
     Вызов PaymentWorker::sendToRefund осуществлен 1 раз
 
+    Вызов Logger::sendWarn осуществлен 0 раз
+
     
 
     5.1) Сценарий проходит успешно:
@@ -1398,6 +1482,7 @@
     
     Вызов PaymentWorker:sendToRefund осуществлен 0 раз
     Вызов Logger::sendAlarm осуществлен 0 раз
+    Вызов Logger::sendWarn осуществлен 0 раз
 
 
     6) Кейс проверки заказа на существования заказа в системе - инкапсулирует в себя цепочку вызовов, приведенную в кейсе 5, и последующий вызов метода PaymentRepository::getPaidOrderByNumber(string $order_number)
@@ -1483,17 +1568,15 @@
     9) Повторная отправка заказа:
         Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует -> возврат ответа "Данный заказ уже проходит обработку в системе" с кодом 409
 
-    10) Повторная отправка нескольких заказов:
-        10.1)Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует -> возврат ответа "Данный заказ уже проходит обработку в системе" с кодом 409
-
-         --->  На 0.0001мс позже, чем 10.1 -->    10.2) Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует -> возврат ответа "Данный заказ уже проходит обработку в системе" с кодом 409
-
 
     10) Позитивный кейс:
         Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует -> проверка в репозитории номера заказа на предмет оплаты -> проверка в репозитории соответствия суммы платежа номеру заказа -> backend -> обращение к платежному сервису A -> запись в базу сведений о оплаченном заказе -> backend -> удаление сведений об обработке текущего заказа из in memory хранилища -> возврат сообщения с кодом 200 -> клиент -> вывод сообщения "Оплата прошла успешно"
 
     11) Повторная отправка
         
-        Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует ->
+      Запрос 1)  Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище если такового не существует -> проверка в репозитории номера заказа на предмет оплаты -> проверка в репозитории соответствия суммы платежа номеру заказа -> backend -> обращение к платежному сервису A -> запись в базу сведений о оплаченном заказе -> backend -> удаление сведений об обработке текущего заказа из in memory хранилища -> возврат сообщения с кодом 200 -> клиент -> вывод сообщения "Оплата прошла успешно"
 
+      Запрос 2) Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище, если такового не существует -> обнаружение обработки заказа с таким номером -> возврат сообщения "Заказ с таким номером уже проходит обработку в системе" с кодом 409 -> клиент -> вывод сообщения "Заказ с таким номером уже проходит обработку в системе"
+
+      Запрос 3) Клиент -> backend -> валидация списка входящих параметров -> запись номера текущего заказа в in memory хранилище, если такового не существует -> обнаружение обработки заказа с таким номером -> возврат сообщения "Заказ с таким номером уже проходит обработку в системе" с кодом 409 -> клиент -> вывод сообщения "Заказ с таким номером уже проходит обработку в системе"
 
